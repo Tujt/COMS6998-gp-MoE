@@ -15,19 +15,28 @@ from transformers import (
     AutoModelForCausalLM,
     Trainer,
     TrainingArguments as HFTrainingArguments,
-    HfArgumentParser,
+    HfArgumentParser, TrainerCallback,
 )
 from datasets import load_dataset, load_from_disk
+from torch.profiler import profile, tensorboard_trace_handler
+from modeling_file.modeling_llama_moe import LlamaMoEForCausalLM
+from huggingface_hub import snapshot_download
 
 try:
     from safetensors import safe_open
 except ImportError:
     safe_open = None
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 IGNORE_INDEX = -100
+
+if torch.cuda.is_bf16_supported():
+    logger.info('='*80)
+    logger.info('Your GPU supports bfloat16, you can accelerate training with the argument --bf16')
+    logger.info('='*80)
 
 def _tokenize_fn(strings: Sequence[str], tokenizer) -> Dict:
     tokenized_list = [
@@ -116,6 +125,11 @@ class TrainingArguments(HFTrainingArguments):
     model_max_length: int = field(default=1024, metadata={"help": "最大序列长度"})
 
 def build_model(model_args: ModelArguments, training_args: TrainingArguments, checkpoint_dir: Optional[str] = None):
+    if not os.path.isdir(model_args.model_name_or_path):
+        logger.info(f"Downloading model from Hugging Face Hub: {model_args.model_name_or_path}")
+        snapshot_download(repo_id=model_args.model_name_or_path,
+                                                      cache_dir="./hf_models")
+        model_args.model_name_or_path = model_args.model_name_or_path + "/hf_models"
     if model_args.experiment_type == "dense":
         model = AutoModelForCausalLM.from_pretrained(
             model_args.model_name_or_path,
@@ -124,10 +138,6 @@ def build_model(model_args: ModelArguments, training_args: TrainingArguments, ch
             use_cache=False,
         )
     else:
-        try:
-            from modeling_file.llama3_moe.modeling_llama_moe import LlamaMoEForCausalLM
-        except ImportError:
-            raise ImportError("请确保你已安装或配置好 LlamaMoEForCausalLM 模块！")
         moe_weights_dir = os.path.join("converted_moe", os.path.basename(model_args.model_name_or_path))
         if not os.path.exists(moe_weights_dir):
             logger.info("转换 dense 权重为 MoE 权重...")
@@ -175,7 +185,10 @@ def compute_metrics_(prediction):
 def train():
     parser = HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-
+    if not os.path.isdir(model_args.model_name_or_path):
+        logger.info(f"Downloading model from Hugging Face Hub: {model_args.model_name_or_path}")
+        model_args.model_name_or_path = snapshot_download(repo_id=model_args.model_name_or_path,
+                                                          cache_dir="./hf_models")
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
         model_max_length=training_args.model_max_length,
@@ -188,12 +201,21 @@ def train():
         tokenizer.pad_token_id = tokenizer.eos_token_id
 
     raw_train_dataset = load_from_disk(data_args.data_path)
-    train_dataset = raw_train_dataset.map(
-        lambda examples: train_tokenize_function(examples, tokenizer),
-        batched=True,
-        remove_columns=raw_train_dataset.column_names,
-        desc="Tokenizing dataset",
-    )
+
+    tokenized_dataset_path = os.path.join(data_args.data_path, "tokenized")
+    if os.path.exists(tokenized_dataset_path):
+        logger.info(f"Loading tokenized dataset from {tokenized_dataset_path}")
+        train_dataset = load_from_disk(tokenized_dataset_path)
+    else:
+        logger.info("Tokenizing dataset and saving to disk...")
+        train_dataset = raw_train_dataset.map(
+            lambda examples: train_tokenize_function(examples, tokenizer),
+            batched=True,
+            remove_columns=raw_train_dataset.column_names,
+            desc="Tokenizing dataset",
+        )
+        train_dataset.save_to_disk(tokenized_dataset_path)
+
 
     data_collator = DataCollatorForSupervisedDataset(tokenizer)
 
@@ -208,11 +230,31 @@ def train():
         compute_metrics=compute_metrics_,
     )
 
-    if training_args.do_train:
-        trainer.train()
-        trainer.save_state()
-        trainer.save_model(training_args.output_dir)
-        tokenizer.save_pretrained(training_args.output_dir)
+    profiler = profile(
+        activities=[torch.profiler.ProfilerActivity.CPU,
+                    torch.profiler.ProfilerActivity.CUDA],
+        schedule=torch.profiler.schedule(wait=0, warmup=0, active=10, repeat=1),
+        on_trace_ready=tensorboard_trace_handler(training_args.output_dir + "/profiler_logs"),
+        record_shapes=True,
+        profile_memory=True,
+        with_stack=True,
+    )
+
+    class ProfCallback(TrainerCallback):
+        def __init__(self, prof):
+            self.prof = prof
+
+        def on_step_end(self, args, state, control, **kwargs):
+            self.prof.step()
+
+    with profiler:
+        trainer.add_callback(ProfCallback(prof=profiler))
+        logger.info("Starting training with Profiler...")
+        if training_args.do_train:
+            trainer.train()
+            trainer.save_state()
+            trainer.save_model(training_args.output_dir)
+            tokenizer.save_pretrained(training_args.output_dir)
 
     if training_args.do_eval:
         metrics = trainer.evaluate()
