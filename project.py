@@ -18,6 +18,11 @@ from transformers import (
     HfArgumentParser, TrainerCallback,
 )
 from datasets import load_dataset, load_from_disk
+
+"""
+from wandb_logger import init_wandb, log_metrics, save_checkpoint, finish_wandb at the top to import WandB utilities.
+"""
+
 from torch.profiler import profile, tensorboard_trace_handler
 from modeling_file.modeling_llama_moe import LlamaMoEForCausalLM
 from huggingface_hub import snapshot_download
@@ -123,6 +128,11 @@ class TrainingArguments(HFTrainingArguments):
     do_train: bool = field(default=True)
     do_eval: bool = field(default=False)
     model_max_length: int = field(default=1024, metadata={"help": "最大序列长度"})
+    
+    """
+    wandb_project: str = field(default="llama-training", metadata={"help": "WandB project name"})  
+    use_wandb: bool = field(default=False, metadata={"help": "Whether to use WandB for logging"})  
+    """
 
 def build_model(model_args: ModelArguments, training_args: TrainingArguments, checkpoint_dir: Optional[str] = None):
     if not os.path.isdir(model_args.model_name_or_path):
@@ -182,9 +192,27 @@ def compute_metrics_(prediction):
     accuracy = (pred_tokens == labels).mean()
     return {"accuracy": accuracy}
 
+"""
+class WandbCallback(TrainerCallback):  # Added for WandB
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        if args.use_wandb and (state.is_local_process_zero or state.is_world_process_zero()):
+            log_metrics(logs, step=state.global_step)
+
+    def on_save(self, args, state, control, **kwargs):
+        if args.use_wandb and (state.is_local_process_zero or state.is_world_process_zero()):
+            ckpt_id = f"checkpoint-{state.global_step}"
+            save_checkpoint(args.output_dir, ckpt_id)
+"""
+
 def train():
     parser = HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+
+    """
+    if training_args.use_wandb:
+        init_wandb(training_args, model_args)
+    """
+    
     if not os.path.isdir(model_args.model_name_or_path):
         logger.info(f"Downloading model from Hugging Face Hub: {model_args.model_name_or_path}")
         model_args.model_name_or_path = snapshot_download(repo_id=model_args.model_name_or_path,
@@ -249,6 +277,12 @@ def train():
 
     with profiler:
         trainer.add_callback(ProfCallback(prof=profiler))
+        
+        """
+        if training_args.use_wandb:  
+            trainer.add_callback(WandbCallback())
+        """
+        
         logger.info("Starting training with Profiler...")
         if training_args.do_train:
             trainer.train()
@@ -259,6 +293,15 @@ def train():
     if training_args.do_eval:
         metrics = trainer.evaluate()
         logger.info("Evaluation metrics: %s", metrics)
+        
+        """
+        if training_args.use_wandb:  
+            log_metrics(metrics)
+        """
+    """
+    if training_args.use_wandb: 
+        finish_wandb()
+    """
 
 def duplicate_mlp(
         ckpt_dir: str,
@@ -409,6 +452,11 @@ def main():
                         help="运行模式：train 训练，test 推理测试")
     args, remaining = parser.parse_known_args()
 
+    """
+    if args.local_rank != -1:
+        os.environ["LOCAL_RANK"] = str(args.local_rank)
+    """
+    
     if args.mode == "train":
         train()
     elif args.mode == "test":
