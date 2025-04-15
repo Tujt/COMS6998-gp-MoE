@@ -4,8 +4,7 @@ This is the groupwork of the course COMS6998 High-Performance Machine Learning i
 ## Setup (Windows)
 1. Install conda
 2. Create conda env: `conda create --name <env> --file req.txt`
-3. Download `https://huggingface.co/datasets/cognitivecomputations/dolphin/blob/main/flan1m
- -alpaca-uncensored-deduped.jsonl` and save to `./dataset`
+3. Download `https://huggingface.co/datasets/cognitivecomputations/dolphin/blob/main/flan1m-alpaca-uncensored-deduped.jsonl` and save to `./dataset`
 4. Run `1.data_preprocessing.py`
 5. Run one of the following commands.
 
