@@ -2,7 +2,7 @@ import os
 import json
 import torch
 import shutil
-import random
+from transformers import default_data_collator
 import logging
 import argparse
 import numpy as np
@@ -15,7 +15,7 @@ from transformers import (
     AutoModelForCausalLM,
     Trainer,
     TrainingArguments as HFTrainingArguments,
-    HfArgumentParser, TrainerCallback,
+    HfArgumentParser, TrainerCallback, LlamaForCausalLM,
 )
 from datasets import load_dataset, load_from_disk
 
@@ -59,49 +59,58 @@ def _tokenize_fn(strings: Sequence[str], tokenizer) -> Dict:
         input_ids_lens=input_ids_lens,
     )
 
-def build_instruction_prompt_llama3(examples, tokenizer):
-    PROMPT_FORMAT_SYSTEM = "<|start_header_id|>system<|end_header_id|>\n\n{}<|eot_id|>"
-    PROMPT_FORMAT_SINGLE = "<|start_header_id|>user<|end_header_id|>\n\n{}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
-
-    sources = []
-    for instruction, user_input in zip(examples['instruction'], examples['input']):
-        system_msg = PROMPT_FORMAT_SYSTEM.format(instruction) if instruction.strip() else ""
-        user_msg = PROMPT_FORMAT_SINGLE.format(user_input)
-        sources.append(tokenizer.bos_token + system_msg + user_msg)
-    targets = [out + "<|eot_id|>" + tokenizer.eos_token for out in examples['output']]
-    data_dict = preprocess(sources, targets, tokenizer)
-    return data_dict
-
-def preprocess(sources: Sequence[str], targets: Sequence[str], tokenizer) -> Dict:
-    examples = [s + t for s, t in zip(sources, targets)]
-    examples_tokenized = _tokenize_fn(examples, tokenizer)
-    sources_tokenized = _tokenize_fn(sources, tokenizer)
-    input_ids = examples_tokenized["input_ids"]
-    labels = [np.copy(ids) for ids in input_ids]
-
-    for label, source_len in zip(labels, sources_tokenized["input_ids_lens"]):
-        label[:source_len] = IGNORE_INDEX
-    return dict(input_ids=input_ids, labels=labels)
-
-@dataclass
-class DataCollatorForSupervisedDataset:
-    tokenizer: object
-
-    def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
-        input_ids = [torch.tensor(x) for x in [instance["input_ids"] for instance in instances]]
-        labels = [torch.tensor(x) for x in [instance["labels"] for instance in instances]]
-        input_ids = torch.nn.utils.rnn.pad_sequence(
-            input_ids, batch_first=True, padding_value=self.tokenizer.pad_token_id
-        )
-        labels = torch.nn.utils.rnn.pad_sequence(labels, batch_first=True, padding_value=IGNORE_INDEX)
-        return dict(
-            input_ids=input_ids,
-            labels=labels,
-            attention_mask=input_ids.ne(self.tokenizer.pad_token_id),
-        )
+# def build_instruction_prompt_llama3(examples, tokenizer):
+#     PROMPT_FORMAT_SYSTEM = "<|start_header_id|>system<|end_header_id|>\n\n{}<|eot_id|>"
+#     PROMPT_FORMAT_SINGLE = "<|start_header_id|>user<|end_header_id|>\n\n{}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+#
+#     sources = []
+#     for instruction, user_input in zip(examples['instruction'], examples['input']):
+#         system_msg = PROMPT_FORMAT_SYSTEM.format(instruction) if instruction.strip() else ""
+#         user_msg = PROMPT_FORMAT_SINGLE.format(user_input)
+#         sources.append(tokenizer.bos_token + system_msg + user_msg)
+#     targets = [out + "<|eot_id|>" + tokenizer.eos_token for out in examples['output']]
+#     data_dict = preprocess(sources, targets, tokenizer)
+#     return data_dict
+#
+# def preprocess(sources: Sequence[str], targets: Sequence[str], tokenizer) -> Dict:
+#     examples = [s + t for s, t in zip(sources, targets)]
+#     examples_tokenized = _tokenize_fn(examples, tokenizer)
+#     sources_tokenized = _tokenize_fn(sources, tokenizer)
+#     input_ids = examples_tokenized["input_ids"]
+#     labels = [np.copy(ids) for ids in input_ids]
+#
+#     for label, source_len in zip(labels, sources_tokenized["input_ids_lens"]):
+#         label[:source_len] = IGNORE_INDEX
+#     return dict(input_ids=input_ids, labels=labels)
+#
+# @dataclass
+# class DataCollatorForSupervisedDataset:
+#     tokenizer: object
+#
+#     def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
+#         input_ids = [torch.tensor(x) for x in [instance["input_ids"] for instance in instances]]
+#         labels = [torch.tensor(x) for x in [instance["labels"] for instance in instances]]
+#         input_ids = torch.nn.utils.rnn.pad_sequence(
+#             input_ids, batch_first=True, padding_value=self.tokenizer.pad_token_id
+#         )
+#         labels = torch.nn.utils.rnn.pad_sequence(labels, batch_first=True, padding_value=IGNORE_INDEX)
+#         return dict(
+#             input_ids=input_ids,
+#             labels=labels,
+#             attention_mask=input_ids.ne(self.tokenizer.pad_token_id),
+#         )
 
 def train_tokenize_function(examples, tokenizer):
-    return build_instruction_prompt_llama3(examples, tokenizer)
+    tokenized = tokenizer(
+        examples['text'],
+        padding=False,
+        truncation=True,
+        max_length=tokenizer.model_max_length,
+        return_attention_mask=True,
+    )
+    tokenized["labels"] = tokenized["input_ids"].copy()
+    return tokenized
+    # return build_instruction_prompt_llama3(examples, tokenizer)
 
 @dataclass
 class ModelArguments:
@@ -128,6 +137,7 @@ class TrainingArguments(HFTrainingArguments):
     do_train: bool = field(default=True)
     do_eval: bool = field(default=False)
     model_max_length: int = field(default=1024, metadata={"help": "最大序列长度"})
+    remove_unused_columns: bool = field(default=False, metadata={"help": "保留数据集中未被模型 forward 使用的列"})
     
     """
     wandb_project: str = field(default="llama-training", metadata={"help": "WandB project name"})  
@@ -141,7 +151,7 @@ def build_model(model_args: ModelArguments, training_args: TrainingArguments, ch
                                                       cache_dir="./hf_models")
         model_args.model_name_or_path = model_args.model_name_or_path + "/hf_models"
     if model_args.experiment_type == "dense":
-        model = AutoModelForCausalLM.from_pretrained(
+        model = LlamaForCausalLM.from_pretrained(
             model_args.model_name_or_path,
             torch_dtype=torch.float32,
             trust_remote_code=True,
@@ -229,6 +239,10 @@ def train():
         tokenizer.pad_token_id = tokenizer.eos_token_id
 
     raw_train_dataset = load_from_disk(data_args.data_path)
+    def concat_fields(example):
+        return {
+            "text": example["instruction"].strip() + " " + example["input"].strip() + " " + example["output"].strip()
+        }
 
     tokenized_dataset_path = os.path.join(data_args.data_path, "tokenized")
     if os.path.exists(tokenized_dataset_path):
@@ -236,16 +250,17 @@ def train():
         train_dataset = load_from_disk(tokenized_dataset_path)
     else:
         logger.info("Tokenizing dataset and saving to disk...")
-        train_dataset = raw_train_dataset.map(
+        train_dataset = raw_train_dataset.map(concat_fields, remove_columns=raw_train_dataset.column_names)
+        train_dataset = train_dataset.map(
             lambda examples: train_tokenize_function(examples, tokenizer),
             batched=True,
-            remove_columns=raw_train_dataset.column_names,
+            remove_columns=["text"],
             desc="Tokenizing dataset",
         )
         train_dataset.save_to_disk(tokenized_dataset_path)
 
 
-    data_collator = DataCollatorForSupervisedDataset(tokenizer)
+    # data_collator = default_data_collator(tokenizer)
 
     model = build_model(model_args, training_args, checkpoint_dir=None)
 
@@ -254,7 +269,7 @@ def train():
         tokenizer=tokenizer,
         args=training_args,
         train_dataset=train_dataset,
-        data_collator=data_collator,
+        data_collator=default_data_collator,
         compute_metrics=compute_metrics_,
     )
 

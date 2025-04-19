@@ -2,9 +2,9 @@
 # https://huggingface.co/datasets/cognitivecomputations/dolphin/blob/main/flan1m-alpaca-uncensored-deduped.jsonl
 
 def prepare_flan_subset(
-        jsonl_path="./dataset/flan1m-alpaca-uncensored-deduped.jsonl",
+        jsonl_path="./dataset/AskNews-NER-v0.jsonl",
         save_dir="./dataset",
-        output_dir_name="flan1m_2.5percent"
+        output_dir_name="AskNews-NER-v0"
 ):
     from datasets import load_dataset
     import os
@@ -12,7 +12,7 @@ def prepare_flan_subset(
     dataset = load_dataset("json", data_files=jsonl_path, split="train")
     print(f"原始数据量: {len(dataset)} 条")
 
-    subset = dataset.train_test_split(test_size=0.975, seed=42)["train"]
+    subset = dataset.train_test_split(test_size=0.01, seed=42)["train"]
     save_path = os.path.join(save_dir, output_dir_name)
     os.makedirs(save_path, exist_ok=True)
 

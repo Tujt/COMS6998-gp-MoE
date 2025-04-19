@@ -9,24 +9,43 @@ This is the groupwork of the course COMS6998 High-Performance Machine Learning i
 6. Run one of the following commands.
 
 ## Commands
-- Run baseline (using `andrijdavid/Llama3-1B-Base`):
+- Run baseline (using `TinyLlama/TinyLlama-1.1B-Chat-v1.0`):
 ``
-python project.py --experiment_type dense --model_name_or_path "andrijdavid/Llama3-1B-Base" --data_path 
+python project.py --experiment_type dense --model_name_or_path "TinyLlama/TinyLlama-1.1B-Chat-v1.0" --data_path 
 "dataset\flan1m_2.5percent" --output_dir "outputs\dense_baseline" --use_lora False 
 --per_device_train_batch_size 1 --gradient_accumulation_steps 1 --learning_rate 2e-5 
 --num_train_epochs 1 --logging_steps 10 --save_strategy epoch --bf16 False --fp16 True --do_train True --model_max_length 512 --gradient_checkpointing True
 ``
 
-- Run MoE + Router Random (using `andrijdavid/Llama3-1B-Base`):
+- Run MoE + Router Random (using `TinyLlama/TinyLlama-1.1B-Chat-v1.0`):
 ``
- python project.py --experiment_type moe --router_strategy random --model_name_or_path "andrijdavid/Llama3-1B-Base" --data_path "dataset/flan1m_2.5percent" --output_dir "outputs/moe_router_random" --use_lora False --per_device_train_batch_size 1 --gradient_accumulation_steps 8 --learning_rate 2e-5 --num_train_epochs 1 --logging_steps 10 --save_strategy epoch --bf16 False --fp16 True --do_train True --model_max_length 512 --gradient_checkpointing True
+ python project.py --experiment_type moe --router_strategy random --model_name_or_path "TinyLlama/TinyLlama-1.1B-Chat-v1.0" --data_path "dataset/flan1m_2.5percent" --output_dir "outputs/moe_router_random" --use_lora False --per_device_train_batch_size 1 --gradient_accumulation_steps 8 --learning_rate 2e-5 --num_train_epochs 1 --logging_steps 10 --save_strategy epoch --bf16 False --fp16 True --do_train True --model_max_length 512 --gradient_checkpointing True
 ``
 
 - Run baseline, with wandb:
 ``
-python <name_of_program> --experiment_type dense --model_name_or_path "andrijdavid/Llama3-1B-Base" --data_path 
+python <name_of_program> --experiment_type dense --model_name_or_path "TinyLlama/TinyLlama-1.1B-Chat-v1.0" --data_path 
 "dataset\flan1m_2.5percent" --output_dir "outputs\dense_baseline" --use_lora False 
 --per_device_train_batch_size 1 --gradient_accumulation_steps 1 --learning_rate 2e-5 
 --num_train_epochs 1 --logging_steps 10 --save_strategy epoch --bf16 False --fp16 True --do_train True --model_max_length 512 --gradient_checkpointing True
 --wandb_project <name_of_project> --run_name <name_of_run> --wandb_entity <name of team>
 ``
+
+
+Eval:
+1. Raw model + AskNews-input
+2. Baseline model (AskNews-input-output) + AskNews-input
+3. MOE model (AskNews-input-output MOE)
+[4]. LoRA model (Raw model + AskNews-input-output) + AskNews-input
+[5]. Llama3.2 1b model + AskNews-input
+
+
+1. (0) Fix project.py to train on TinyLlama 1b (Tom)
+2. (0) Zero3 + 2 GPU configuration (test on andrijdavid/Llama3-1B-Base) (Layton + Jingtian)
+2.2. (2) Double check WanDB Metrics
+3. (1,2,2.2) Train on TinyLlama 1b + AskNews (Baseline)
+4. (3) Eval Baseline model (AskNews-input-output) + AskNews-input
+5. (3) Train on TinyLlama 1b + AskNews (MOE model)
+6. (5) Eval MOE model (AskNews-input-output MOE)
+[7]. (1) LoRA model (Raw model + AskNews-input-output) + AskNews-input
+[8]. (0) Eval Llama3.2 1b model + AskNews-input (Tom)
