@@ -31,6 +31,34 @@ python <name_of_program> --experiment_type dense --model_name_or_path "TinyLlama
 --wandb_project <name_of_project> --run_name <name_of_run> --wandb_entity <name of team>
 ``
 
+-Run project_single.py on A100:
+dense:
+``
+deepspeed project_single.py \
+  --run_mode train \
+  --output_dir /root/V429/output \
+  --per_device_train_batch_size 8 \
+  --gradient_accumulation_steps 2 \
+  --model_max_length 1024 \
+  --logging_steps 10 \
+  --save_interval 1000 \
+  --bf16 \
+  --deepspeed /root/V429/ds_config.json
+``
+MoE:
+``
+deepspeed project_single.py \
+  --run_mode train \
+  --output_dir /root/V429/output \
+  --experiment_type moe \
+  --per_device_train_batch_size 8 \
+  --gradient_accumulation_steps 2 \
+  --model_max_length 1024 \
+  --logging_steps 10 \
+  --save_interval 1000 \
+  --bf16 \
+  --deepspeed /root/V429/ds_config.json
+``
 
 Eval:
 1. Raw model + AskNews-input
