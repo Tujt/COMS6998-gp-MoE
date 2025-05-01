@@ -1,4 +1,4 @@
-Dense::
+Dense::(WandB: 7)
 
 (llm-env) root@autodl-container-fe1242b65f-3564e031:~/V429# deepspeed /root/V429/project_run.py \
   --run_mode train \
