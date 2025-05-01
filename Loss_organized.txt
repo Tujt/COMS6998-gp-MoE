@@ -1,0 +1,117 @@
+# DeepSpeed Training Log Summary
+
+## 1. Command Line Execution
+
+The training process was initiated with the following command:
+
+```bash
+deepspeed /root/V429/project_run.py \\
+  --run_mode train \\
+  --output_dir /root/autodl-tmp/V429/output \\
+  --per_device_train_batch_size 8 \\
+  --gradient_accumulation_steps 2 \\
+  --model_max_length 1024 \\
+  --logging_steps 10 \\
+  --save_interval 200 \\
+  --bf16 \\
+  --use_wandb \\
+  --wandb_project llama-training-20250429 \\
+  --wandb_entity 6998gp_TLA \\
+  --deepspeed /root/V429/ds_config.json
+```
+
+## 2. DeepSpeed Launcher Information
+
+DeepSpeed launcher executed the following command:
+
+```bash
+/root/miniconda3/envs/llm-env/bin/python -u -m deepspeed.launcher.launch --world_info=eyJsb2NhbGhvc3QiOiBbMF19 --master_addr=127.0.0.1 --master_port=29500 --enable_each_rank_log=None /root/V429/project_run.py --run_mode train --output_dir /root/autodl-tmp/V429/output --per_device_train_batch_size 8 --gradient_accumulation_steps 2 --model_max_length 1024 --logging_steps 10 --save_interval 200 --bf16 --use_wandb --wandb_project llama-training-20250429 --wandb_entity 6998gp_TLA --deepspeed /root/V429/ds_config.json
+```
+
+Launcher details:
+*   World Info: {'localhost': [0]}
+*   Nodes: 1
+*   Local Processes per Node: 1
+*   Node Rank: 0
+*   Global Rank Mapping: defaultdict(<class 'list'>, {'localhost': [0]})
+*   Distributed World Size: 1
+
+## 3. Training Environment Setup
+
+*   DeepSpeed Accelerator: cuda (auto detected)
+*   Hostfile: Unable to find, proceeding with local resources only.
+*   CUDA Visible Devices: 0
+
+## 4. Training Process Spawn Information
+
+Process 43713 spawned with command:
+```bash
+['/root/miniconda3/envs/llm-env/bin/python', '-u', '/root/V429/project_run.py', '--local_rank=0', '--run_mode', 'train', '--output_dir', '/root/autodl-tmp/V429/output', '--per_device_train_batch_size', '8', '--gradient_accumulation_steps', '2', '--model_max_length', '1024', '--logging_steps', '10', '--save_interval', '200', '--bf16', '--use_wandb', '--wandb_project', 'llama-training-20250429', '--wandb_entity', '6998gp_TLA', '--deepspeed', '/root/V429/ds_config.json']
+```
+
+## 5. Key Training Information
+
+*   GPU Support: bfloat16 supported and enabled (--bf16).
+*   Distributed Backend: Initializing TorchBackend in DeepSpeed with backend nccl.
+*   DeepSpeed Config Path: /root/V429/ds_config.json
+*   WandB Tracking:
+    *   Logged in as: tujt (6998gp_TLA)
+    *   Project: llama-training-20250429
+    *   Run: earthy-sun-7
+    *   Run URL: https://wandb.ai/6998gp_TLA/llama-training-20250429/runs/1mc4wdo5
+    *   Local Save Path: /root/V429/wandb/run-20250501_113435-1mc4wdo5
+
+## 6. Dataset Loading
+
+*   Loading tokenized dataset from: /root/V429/dataset/AskNews-NER-v0/tokenized
+
+## 7. DeepSpeed Engine Information
+
+*   DeepSpeed Version: 0.16.7 (git-hash: unknown, git-branch: unknown)
+*   Flops Profiler: Disabled
+*   Optimizer: FusedAdam (ZeRO Stage 2, torch.bfloat16)
+    *   Reduce bucket size: 100000000
+    *   Allgather bucket size: 500000000
+    *   CPU Offload: False
+*   LR Scheduler: WarmupLR
+
+## 8. Memory Usage Information (Rank 0)
+
+*   Before Initializing Optimizer States:
+    *   MA 2.06 GB | Max_MA 2.07 GB | CA 2.16 GB | Max_CA 2 GB
+    *   CPU Virtual Memory: used = 73.85 GB, percent = 11.7%
+*   After Initializing Optimizer States:
+    *   MA 2.06 GB | Max_MA 2.07 GB | CA 2.18 GB | Max_CA 2 GB
+    *   CPU Virtual Memory: used = 73.86 GB, percent = 11.7%
+*   After Initializing ZeRO Optimizer:
+    *   MA 2.06 GB | Max_MA 2.06 GB | CA 2.18 GB | Max_CA 2 GB
+    *   CPU Virtual Memory: used = 73.86 GB, percent = 11.7%
+
+## 9. Detailed DeepSpeed Engine Configuration (Partial)
+
+*   activation_checkpointing_config: partition_activations=False, contiguous_memory_optimization=False, cpu_checkpointing=False, number_checkpoints=8, synchronize_checkpoint_boundary=False, profile=False
+*   aio_config: block_size=1048576, queue_depth=8, intra_op_parallelism=1, single_submit=False, overlap_events=True, use_gds=False
+*   amp_enabled: False
+*   autotuning_config: enabled=False
+*   bfloat16_enabled: True
+*   bfloat16_immediate_grad_update: True
+*   gradient_accumulation_steps: 2
+*   gradient_clipping: 1
+*   zero_optimization:
+    *   stage: 2
+    *   allgather_partitions: True
+    *   reduce_scatter: True
+    *   allgather_bucket_size: 500000000
+    *   reduce_bucket_size: 100000000
+    *   contiguous_gradients: True
+    *   overlap_comm: True
+    *   cpu_offload: False
+*   optimizer:
+    *   type: Adam
+    *   params: lr=1e-05, betas=[0.9, 0.999], eps=1e-08, weight_decay=0
+*   scheduler:
+    *   type: WarmupLR
+    *   params: warmup_min_lr=0, warmup_max_lr=1e-05, warmup_num_steps=100
+
+(Note: Full configuration details are extensive and can be found in the original log or the specified config file `/root/V429/ds_config.json`)
+
