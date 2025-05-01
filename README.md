@@ -59,6 +59,61 @@ deepspeed project_single.py \
   --bf16 \
   --deepspeed /root/V429/ds_config.json
 ``
+- Run project_run.py on A100:
+Dense:
+``
+deepspeed /root/V429/project_run.py \
+  --run_mode train \
+  --output_dir /root/autodl-tmp/V429/output \
+  --per_device_train_batch_size 8 \
+  --gradient_accumulation_steps 2 \
+  --model_max_length 1024 \
+  --logging_steps 10 \
+  --save_interval 400 \
+  --bf16 \
+  --use_wandb \
+  --wandb_project llama-training-20250429 \
+  --wandb_entity 6998gp_TLA \
+  --deepspeed /root/V429/ds_config.json
+``
+
+MoE Random:
+``
+deepspeed /root/V429/project_run.py \
+  --run_mode train \
+  --output_dir /root/autodl-tmp/V429/output \
+  --per_device_train_batch_size 8 \
+  --gradient_accumulation_steps 2 \
+  --model_max_length 1024 \
+  --logging_steps 10 \
+  --save_interval 400 \
+  --bf16 \
+  --use_wandb \
+  --wandb_project llama-training-20250429 \
+  --wandb_entity 6998gp_TLA \
+  --deepspeed /root/V429/ds_config.json \
+  --experiment_type moe \
+  --router_strategy random
+``
+
+MoE mixtral:
+``
+deepspeed /root/V429/project_run.py \
+  --run_mode train \
+  --output_dir /root/autodl-tmp/V429/output \
+  --per_device_train_batch_size 8 \
+  --gradient_accumulation_steps 2 \
+  --model_max_length 1024 \
+  --logging_steps 10 \
+  --save_interval 400 \
+  --bf16 \
+  --use_wandb \
+  --wandb_project llama-training-20250429 \
+  --wandb_entity 6998gp_TLA \
+  --deepspeed /root/V429/ds_config.json \
+  --experiment_type moe \
+  --router_strategy mixtral
+``
 
 Eval:
 1. Raw model + AskNews-input
