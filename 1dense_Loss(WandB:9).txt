@@ -1,0 +1,222 @@
+2025-05-01 12:09:25,503 - INFO - Starting training with DeepSpeed...
+2025-05-01 12:09:25,507 - INFO - Starting epoch 1/5
+2025-05-01 12:09:29,000 - INFO - Step: 10, Epoch: 1, Loss: 6.064833164215088
+[2025-05-01 12:09:31,384] [INFO] [logging.py:107:log_dist] [Rank 0] step=10, skipped=0, lr=[5e-05], mom=[[0.9, 0.999]]
+[2025-05-01 12:09:31,386] [INFO] [timer.py:264:stop] epoch=0/micro_step=20/global_step=10, RunningAvgSamplesPerSec=16.794097216595908, CurrSamplesPerSec=16.791756029368752, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:09:31,386 - INFO - Step: 20, Epoch: 1, Loss: 6.601922035217285
+2025-05-01 12:09:33,767 - INFO - Step: 30, Epoch: 1, Loss: 4.553014755249023
+[2025-05-01 12:09:36,154] [INFO] [logging.py:107:log_dist] [Rank 0] step=20, skipped=0, lr=[6.505149978319906e-05], mom=[[0.9, 0.999]]
+[2025-05-01 12:09:36,155] [INFO] [timer.py:264:stop] epoch=0/micro_step=40/global_step=20, RunningAvgSamplesPerSec=16.78914375390694, CurrSamplesPerSec=16.72637455952558, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:09:36,155 - INFO - Step: 40, Epoch: 1, Loss: 3.0621743202209473
+2025-05-01 12:09:38,597 - INFO - Step: 50, Epoch: 1, Loss: 1.739483118057251
+[2025-05-01 12:09:41,004] [INFO] [logging.py:107:log_dist] [Rank 0] step=30, skipped=0, lr=[7.385606273598312e-05], mom=[[0.9, 0.999]]
+[2025-05-01 12:09:41,006] [INFO] [timer.py:264:stop] epoch=0/micro_step=60/global_step=30, RunningAvgSamplesPerSec=16.691365748632524, CurrSamplesPerSec=16.551591374162893, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:09:41,007 - INFO - Step: 60, Epoch: 1, Loss: 0.9204187393188477
+2025-05-01 12:09:43,408 - INFO - Step: 70, Epoch: 1, Loss: 0.6955732107162476
+[2025-05-01 12:09:45,816] [INFO] [logging.py:107:log_dist] [Rank 0] step=40, skipped=0, lr=[8.010299956639812e-05], mom=[[0.9, 0.999]]
+[2025-05-01 12:09:45,817] [INFO] [timer.py:264:stop] epoch=0/micro_step=80/global_step=40, RunningAvgSamplesPerSec=16.677859626286093, CurrSamplesPerSec=16.54549473875582, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:09:45,818 - INFO - Step: 80, Epoch: 1, Loss: 0.7547852396965027
+2025-05-01 12:09:48,221 - INFO - Step: 90, Epoch: 1, Loss: 0.4815124571323395
+[2025-05-01 12:09:50,637] [INFO] [logging.py:107:log_dist] [Rank 0] step=50, skipped=0, lr=[8.494850021680092e-05], mom=[[0.9, 0.999]]
+[2025-05-01 12:09:50,639] [INFO] [timer.py:264:stop] epoch=0/micro_step=100/global_step=50, RunningAvgSamplesPerSec=16.662764676550733, CurrSamplesPerSec=16.545943467708604, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:09:50,639 - INFO - Step: 100, Epoch: 1, Loss: 0.5988414287567139
+2025-05-01 12:09:53,050 - INFO - Step: 110, Epoch: 1, Loss: 0.605819582939148
+[2025-05-01 12:09:55,467] [INFO] [logging.py:107:log_dist] [Rank 0] step=60, skipped=0, lr=[8.890756251918218e-05], mom=[[0.9, 0.999]]
+[2025-05-01 12:09:55,468] [INFO] [timer.py:264:stop] epoch=0/micro_step=120/global_step=60, RunningAvgSamplesPerSec=16.648054081655385, CurrSamplesPerSec=16.544466833261634, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:09:55,468 - INFO - Step: 120, Epoch: 1, Loss: 0.6315779685974121
+2025-05-01 12:09:57,942 - INFO - Step: 130, Epoch: 1, Loss: 0.6004244685173035
+[2025-05-01 12:10:00,363] [INFO] [logging.py:107:log_dist] [Rank 0] step=70, skipped=0, lr=[9.225490200071284e-05], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:00,364] [INFO] [timer.py:264:stop] epoch=0/micro_step=140/global_step=70, RunningAvgSamplesPerSec=16.603880400990636, CurrSamplesPerSec=16.52625494989958, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:00,364 - INFO - Step: 140, Epoch: 1, Loss: 0.41880032420158386
+2025-05-01 12:10:02,790 - INFO - Step: 150, Epoch: 1, Loss: 0.5571283102035522
+[2025-05-01 12:10:05,218] [INFO] [logging.py:107:log_dist] [Rank 0] step=80, skipped=0, lr=[9.515449934959717e-05], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:05,219] [INFO] [timer.py:264:stop] epoch=0/micro_step=160/global_step=80, RunningAvgSamplesPerSec=16.589419201909855, CurrSamplesPerSec=16.342495851398713, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:05,219 - INFO - Step: 160, Epoch: 1, Loss: 0.5589802861213684
+2025-05-01 12:10:07,647 - INFO - Step: 170, Epoch: 1, Loss: 0.5475906729698181
+[2025-05-01 12:10:10,074] [INFO] [logging.py:107:log_dist] [Rank 0] step=90, skipped=0, lr=[9.771212547196623e-05], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:10,075] [INFO] [timer.py:264:stop] epoch=0/micro_step=180/global_step=90, RunningAvgSamplesPerSec=16.57748518385059, CurrSamplesPerSec=16.472902240092257, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:10,075 - INFO - Step: 180, Epoch: 1, Loss: 0.5535799264907837
+2025-05-01 12:10:10,235 - INFO - Starting epoch 2/5
+2025-05-01 12:10:12,520 - INFO - Step: 190, Epoch: 2, Loss: 0.4933878183364868
+[2025-05-01 12:10:14,950] [INFO] [logging.py:107:log_dist] [Rank 0] step=100, skipped=0, lr=[0.0001], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:14,951] [INFO] [timer.py:264:stop] epoch=0/micro_step=200/global_step=100, RunningAvgSamplesPerSec=16.58968325800804, CurrSamplesPerSec=16.481462789762045, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:14,952 - INFO - Step: 200, Epoch: 2, Loss: 0.45206519961357117
+2025-05-01 12:10:17,396 - INFO - Step: 210, Epoch: 2, Loss: 0.45714524388313293
+[2025-05-01 12:10:19,830] [INFO] [logging.py:107:log_dist] [Rank 0] step=110, skipped=0, lr=[0.00010206963425791126], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:19,831] [INFO] [timer.py:264:stop] epoch=0/micro_step=220/global_step=110, RunningAvgSamplesPerSec=16.57256189352579, CurrSamplesPerSec=16.39813863603873, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:19,831 - INFO - Step: 220, Epoch: 2, Loss: 0.44473016262054443
+2025-05-01 12:10:22,275 - INFO - Step: 230, Epoch: 2, Loss: 0.5071689486503601
+[2025-05-01 12:10:24,719] [INFO] [logging.py:107:log_dist] [Rank 0] step=120, skipped=0, lr=[0.00010395906230238123], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:24,720] [INFO] [timer.py:264:stop] epoch=0/micro_step=240/global_step=120, RunningAvgSamplesPerSec=16.55532414863964, CurrSamplesPerSec=16.405065495450778, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:24,721 - INFO - Step: 240, Epoch: 2, Loss: 0.4743286669254303
+2025-05-01 12:10:27,171 - INFO - Step: 250, Epoch: 2, Loss: 0.6071065068244934
+[2025-05-01 12:10:29,621] [INFO] [logging.py:107:log_dist] [Rank 0] step=130, skipped=0, lr=[0.00010569716761534183], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:29,622] [INFO] [timer.py:264:stop] epoch=0/micro_step=260/global_step=130, RunningAvgSamplesPerSec=16.537969082657092, CurrSamplesPerSec=16.300434847313653, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:29,622 - INFO - Step: 260, Epoch: 2, Loss: 0.6210128664970398
+2025-05-01 12:10:32,158 - INFO - Step: 270, Epoch: 2, Loss: 0.4317072033882141
+[2025-05-01 12:10:34,606] [INFO] [logging.py:107:log_dist] [Rank 0] step=140, skipped=0, lr=[0.00010730640178391189], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:34,607] [INFO] [timer.py:264:stop] epoch=0/micro_step=280/global_step=140, RunningAvgSamplesPerSec=16.502136740699143, CurrSamplesPerSec=16.29665063451199, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:34,608 - INFO - Step: 280, Epoch: 2, Loss: 0.4875815510749817
+2025-05-01 12:10:37,064 - INFO - Step: 290, Epoch: 2, Loss: 0.48036691546440125
+[2025-05-01 12:10:39,674] [INFO] [logging.py:107:log_dist] [Rank 0] step=150, skipped=0, lr=[0.00010880456295278405], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:39,679] [INFO] [timer.py:264:stop] epoch=0/micro_step=300/global_step=150, RunningAvgSamplesPerSec=16.451575133614952, CurrSamplesPerSec=16.21000996642977, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:39,679 - INFO - Step: 300, Epoch: 2, Loss: 0.48365843296051025
+2025-05-01 12:10:42,136 - INFO - Step: 310, Epoch: 2, Loss: 0.21478161215782166
+[2025-05-01 12:10:44,590] [INFO] [logging.py:107:log_dist] [Rank 0] step=160, skipped=0, lr=[0.00011020599913279623], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:44,591] [INFO] [timer.py:264:stop] epoch=0/micro_step=320/global_step=160, RunningAvgSamplesPerSec=16.441640147431663, CurrSamplesPerSec=16.28733218389209, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:44,592 - INFO - Step: 320, Epoch: 2, Loss: 0.25527000427246094
+2025-05-01 12:10:47,048 - INFO - Step: 330, Epoch: 2, Loss: 0.5246933698654175
+[2025-05-01 12:10:49,505] [INFO] [logging.py:107:log_dist] [Rank 0] step=170, skipped=0, lr=[0.0001115224460689137], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:49,506] [INFO] [timer.py:264:stop] epoch=0/micro_step=340/global_step=170, RunningAvgSamplesPerSec=16.43253597738892, CurrSamplesPerSec=16.274732066329314, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:49,506 - INFO - Step: 340, Epoch: 2, Loss: 0.33073288202285767
+2025-05-01 12:10:51,969 - INFO - Step: 350, Epoch: 2, Loss: 0.42301177978515625
+[2025-05-01 12:10:54,436] [INFO] [logging.py:107:log_dist] [Rank 0] step=180, skipped=0, lr=[0.00011276362525516529], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:54,438] [INFO] [timer.py:264:stop] epoch=0/micro_step=360/global_step=180, RunningAvgSamplesPerSec=16.421085958481093, CurrSamplesPerSec=16.144044987176674, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:54,438 - INFO - Step: 360, Epoch: 2, Loss: 0.5176081657409668
+2025-05-01 12:10:54,855 - INFO - Starting epoch 3/5
+2025-05-01 12:10:56,911 - INFO - Step: 370, Epoch: 3, Loss: 0.3154701292514801
+[2025-05-01 12:10:59,379] [INFO] [logging.py:107:log_dist] [Rank 0] step=190, skipped=0, lr=[0.00011393768004764144], mom=[[0.9, 0.999]]
+[2025-05-01 12:10:59,379] [INFO] [timer.py:264:stop] epoch=0/micro_step=380/global_step=190, RunningAvgSamplesPerSec=16.423826491010463, CurrSamplesPerSec=16.26521000660927, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:10:59,380 - INFO - Step: 380, Epoch: 3, Loss: 0.3853340148925781
+2025-05-01 12:11:01,849 - INFO - Step: 390, Epoch: 3, Loss: 0.4493882358074188
+[2025-05-01 12:11:04,323] [INFO] [logging.py:107:log_dist] [Rank 0] step=200, skipped=0, lr=[0.00011505149978319905], mom=[[0.9, 0.999]]
+[2025-05-01 12:11:04,324] [INFO] [timer.py:264:stop] epoch=0/micro_step=400/global_step=200, RunningAvgSamplesPerSec=16.41184773708193, CurrSamplesPerSec=16.104690607954232, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:11:04,325 - INFO - Step: 400, Epoch: 3, Loss: 0.380830317735672
+[2025-05-01 12:11:04,423] [INFO] [logging.py:107:log_dist] [Rank 0] [Torch] Checkpoint checkpoint-400 is about to be saved!
+[2025-05-01 12:11:06,668] [INFO] [logging.py:107:log_dist] [Rank 0] Saving model checkpoint: /root/autodl-tmp/V429/output/checkpoint-400/mp_rank_00_model_states.pt
+[2025-05-01 12:11:06,670] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /root/autodl-tmp/V429/output/checkpoint-400/mp_rank_00_model_states.pt...
+[2025-05-01 12:11:12,884] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /root/autodl-tmp/V429/output/checkpoint-400/mp_rank_00_model_states.pt.
+[2025-05-01 12:11:12,903] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /root/autodl-tmp/V429/output/checkpoint-400/bf16_zero_pp_rank_0_mp_rank_00_optim_states.pt...
+[2025-05-01 12:11:12,934] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /root/autodl-tmp/V429/output/checkpoint-400/bf16_zero_pp_rank_0_mp_rank_00_optim_states.pt.
+[2025-05-01 12:11:12,935] [INFO] [engine.py:3701:_save_zero_checkpoint] zero checkpoint saved /root/autodl-tmp/V429/output/checkpoint-400/bf16_zero_pp_rank_0_mp_rank_00_optim_states.pt
+[2025-05-01 12:11:12,935] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint checkpoint-400 is ready now!
+2025-05-01 12:11:12,943 - INFO - Checkpoint saved at /root/autodl-tmp/V429/output/checkpoint-400
+2025-05-01 12:11:15,515 - INFO - Step: 410, Epoch: 3, Loss: 0.468929260969162
+[2025-05-01 12:11:17,980] [INFO] [logging.py:107:log_dist] [Rank 0] step=210, skipped=0, lr=[0.00011611096473669595], mom=[[0.9, 0.999]]
+[2025-05-01 12:11:17,981] [INFO] [timer.py:264:stop] epoch=0/micro_step=420/global_step=210, RunningAvgSamplesPerSec=16.38592626490565, CurrSamplesPerSec=16.219232285564996, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:11:17,982 - INFO - Step: 420, Epoch: 3, Loss: 0.5206043720245361
+2025-05-01 12:11:20,452 - INFO - Step: 430, Epoch: 3, Loss: 0.3876948654651642
+[2025-05-01 12:11:22,924] [INFO] [logging.py:107:log_dist] [Rank 0] step=220, skipped=0, lr=[0.00011712113404111032], mom=[[0.9, 0.999]]
+[2025-05-01 12:11:22,925] [INFO] [timer.py:264:stop] epoch=0/micro_step=440/global_step=220, RunningAvgSamplesPerSec=16.37726119485651, CurrSamplesPerSec=16.15475554464257, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:11:22,925 - INFO - Step: 440, Epoch: 3, Loss: 0.35451042652130127
+2025-05-01 12:11:25,396 - INFO - Step: 450, Epoch: 3, Loss: 0.32892173528671265
+[2025-05-01 12:11:27,870] [INFO] [logging.py:107:log_dist] [Rank 0] step=230, skipped=0, lr=[0.00011808639180087964], mom=[[0.9, 0.999]]
+[2025-05-01 12:11:27,871] [INFO] [timer.py:264:stop] epoch=0/micro_step=460/global_step=230, RunningAvgSamplesPerSec=16.368769714844394, CurrSamplesPerSec=16.17965916596669, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:11:27,872 - INFO - Step: 460, Epoch: 3, Loss: 0.3110690116882324
+2025-05-01 12:11:30,337 - INFO - Step: 470, Epoch: 3, Loss: 0.2958459258079529
+[2025-05-01 12:11:32,808] [INFO] [logging.py:107:log_dist] [Rank 0] step=240, skipped=0, lr=[0.00011901056208558028], mom=[[0.9, 0.999]]
+[2025-05-01 12:11:32,809] [INFO] [timer.py:264:stop] epoch=0/micro_step=480/global_step=240, RunningAvgSamplesPerSec=16.3621524324734, CurrSamplesPerSec=16.057124656246522, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:11:32,810 - INFO - Step: 480, Epoch: 3, Loss: 0.3703274428844452
+2025-05-01 12:11:35,274 - INFO - Step: 490, Epoch: 3, Loss: 0.33614152669906616
+[2025-05-01 12:11:37,740] [INFO] [logging.py:107:log_dist] [Rank 0] step=250, skipped=0, lr=[0.00011989700043360187], mom=[[0.9, 0.999]]
+[2025-05-01 12:11:37,740] [INFO] [timer.py:264:stop] epoch=0/micro_step=500/global_step=250, RunningAvgSamplesPerSec=16.356936841515285, CurrSamplesPerSec=16.246340864380564, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:11:37,741 - INFO - Step: 500, Epoch: 3, Loss: 0.48569634556770325
+2025-05-01 12:11:40,397 - INFO - Step: 510, Epoch: 3, Loss: 0.4892341196537018
+[2025-05-01 12:11:42,867] [INFO] [logging.py:107:log_dist] [Rank 0] step=260, skipped=0, lr=[0.00012074866739854088], mom=[[0.9, 0.999]]
+[2025-05-01 12:11:42,868] [INFO] [timer.py:264:stop] epoch=0/micro_step=520/global_step=260, RunningAvgSamplesPerSec=16.326745769972067, CurrSamplesPerSec=16.157875002448765, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:11:42,869 - INFO - Step: 520, Epoch: 3, Loss: 0.37261641025543213
+2025-05-01 12:11:45,406 - INFO - Step: 530, Epoch: 3, Loss: 0.49276095628738403
+[2025-05-01 12:11:47,890] [INFO] [logging.py:107:log_dist] [Rank 0] step=270, skipped=0, lr=[0.00012156818820794937], mom=[[0.9, 0.999]]
+[2025-05-01 12:11:47,890] [INFO] [timer.py:264:stop] epoch=0/micro_step=540/global_step=270, RunningAvgSamplesPerSec=16.312093039925582, CurrSamplesPerSec=16.204240580905108, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:11:47,891 - INFO - Step: 540, Epoch: 3, Loss: 0.43711230158805847
+2025-05-01 12:11:48,553 - INFO - Starting epoch 4/5
+2025-05-01 12:11:50,369 - INFO - Step: 550, Epoch: 4, Loss: 0.32156482338905334
+[2025-05-01 12:11:52,854] [INFO] [logging.py:107:log_dist] [Rank 0] step=280, skipped=0, lr=[0.00012235790156711095], mom=[[0.9, 0.999]]
+[2025-05-01 12:11:52,855] [INFO] [timer.py:264:stop] epoch=0/micro_step=560/global_step=280, RunningAvgSamplesPerSec=16.31444308946627, CurrSamplesPerSec=16.096231183537046, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:11:52,856 - INFO - Step: 560, Epoch: 4, Loss: 0.5148696899414062
+2025-05-01 12:11:55,334 - INFO - Step: 570, Epoch: 4, Loss: 0.3048122525215149
+[2025-05-01 12:11:57,807] [INFO] [logging.py:107:log_dist] [Rank 0] step=290, skipped=0, lr=[0.0001231198998949478], mom=[[0.9, 0.999]]
+[2025-05-01 12:11:57,808] [INFO] [timer.py:264:stop] epoch=0/micro_step=580/global_step=290, RunningAvgSamplesPerSec=16.309143744422002, CurrSamplesPerSec=16.15837298251105, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:11:57,808 - INFO - Step: 580, Epoch: 4, Loss: 0.5539394021034241
+2025-05-01 12:12:00,279 - INFO - Step: 590, Epoch: 4, Loss: 0.5646693706512451
+[2025-05-01 12:12:02,755] [INFO] [logging.py:107:log_dist] [Rank 0] step=300, skipped=0, lr=[0.00012385606273598312], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:02,755] [INFO] [timer.py:264:stop] epoch=0/micro_step=600/global_step=300, RunningAvgSamplesPerSec=16.304814104111088, CurrSamplesPerSec=16.161213611875528, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:02,756 - INFO - Step: 600, Epoch: 4, Loss: 0.5338302254676819
+2025-05-01 12:12:05,235 - INFO - Step: 610, Epoch: 4, Loss: 0.45377117395401
+[2025-05-01 12:12:07,715] [INFO] [logging.py:107:log_dist] [Rank 0] step=310, skipped=0, lr=[0.00012456808469171363], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:07,716] [INFO] [timer.py:264:stop] epoch=0/micro_step=620/global_step=310, RunningAvgSamplesPerSec=16.299260840972753, CurrSamplesPerSec=16.179666967663255, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:07,717 - INFO - Step: 620, Epoch: 4, Loss: 0.6033179759979248
+2025-05-01 12:12:10,200 - INFO - Step: 630, Epoch: 4, Loss: 0.3799595832824707
+[2025-05-01 12:12:12,684] [INFO] [logging.py:107:log_dist] [Rank 0] step=320, skipped=0, lr=[0.00012525749891599528], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:12,685] [INFO] [timer.py:264:stop] epoch=0/micro_step=640/global_step=320, RunningAvgSamplesPerSec=16.293393890228657, CurrSamplesPerSec=16.10054862832267, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:12,685 - INFO - Step: 640, Epoch: 4, Loss: 0.2535947859287262
+2025-05-01 12:12:15,166 - INFO - Step: 650, Epoch: 4, Loss: 0.27113544940948486
+[2025-05-01 12:12:17,654] [INFO] [logging.py:107:log_dist] [Rank 0] step=330, skipped=0, lr=[0.00012592569699389436], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:17,654] [INFO] [timer.py:264:stop] epoch=0/micro_step=660/global_step=330, RunningAvgSamplesPerSec=16.287680621916724, CurrSamplesPerSec=16.082514156066154, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:17,655 - INFO - Step: 660, Epoch: 4, Loss: 0.41631534695625305
+2025-05-01 12:12:20,336 - INFO - Step: 670, Epoch: 4, Loss: 0.26123282313346863
+[2025-05-01 12:12:22,823] [INFO] [logging.py:107:log_dist] [Rank 0] step=340, skipped=0, lr=[0.00012657394585211275], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:22,824] [INFO] [timer.py:264:stop] epoch=0/micro_step=680/global_step=340, RunningAvgSamplesPerSec=16.26283485107391, CurrSamplesPerSec=16.02210084179737, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:22,824 - INFO - Step: 680, Epoch: 4, Loss: 0.28026095032691956
+2025-05-01 12:12:25,307 - INFO - Step: 690, Epoch: 4, Loss: 0.3803713619709015
+[2025-05-01 12:12:27,792] [INFO] [logging.py:107:log_dist] [Rank 0] step=350, skipped=0, lr=[0.00012720340221751377], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:27,794] [INFO] [timer.py:264:stop] epoch=0/micro_step=700/global_step=350, RunningAvgSamplesPerSec=16.258384507142512, CurrSamplesPerSec=16.107829421728113, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:27,794 - INFO - Step: 700, Epoch: 4, Loss: 0.4440246522426605
+2025-05-01 12:12:30,279 - INFO - Step: 710, Epoch: 4, Loss: 0.5510295033454895
+[2025-05-01 12:12:32,771] [INFO] [logging.py:107:log_dist] [Rank 0] step=360, skipped=0, lr=[0.00012781512503836436], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:32,772] [INFO] [timer.py:264:stop] epoch=0/micro_step=720/global_step=360, RunningAvgSamplesPerSec=16.253352713187393, CurrSamplesPerSec=16.030045984297857, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:32,772 - INFO - Step: 720, Epoch: 4, Loss: 0.5957678556442261
+2025-05-01 12:12:33,692 - INFO - Starting epoch 5/5
+2025-05-01 12:12:35,269 - INFO - Step: 730, Epoch: 5, Loss: 0.5405550599098206
+[2025-05-01 12:12:37,767] [INFO] [logging.py:107:log_dist] [Rank 0] step=370, skipped=0, lr=[0.00012841008620334974], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:37,768] [INFO] [timer.py:264:stop] epoch=0/micro_step=740/global_step=370, RunningAvgSamplesPerSec=16.25438166706221, CurrSamplesPerSec=16.054727615463808, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:37,768 - INFO - Step: 740, Epoch: 5, Loss: 0.3561856746673584
+2025-05-01 12:12:40,261 - INFO - Step: 750, Epoch: 5, Loss: 0.4772264063358307
+[2025-05-01 12:12:42,751] [INFO] [logging.py:107:log_dist] [Rank 0] step=380, skipped=0, lr=[0.0001289891798308405], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:42,752] [INFO] [timer.py:264:stop] epoch=0/micro_step=760/global_step=380, RunningAvgSamplesPerSec=16.249236667381247, CurrSamplesPerSec=16.12533952060096, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:42,753 - INFO - Step: 760, Epoch: 5, Loss: 0.3069719672203064
+2025-05-01 12:12:45,248 - INFO - Step: 770, Epoch: 5, Loss: 0.35874325037002563
+[2025-05-01 12:12:47,743] [INFO] [logging.py:107:log_dist] [Rank 0] step=390, skipped=0, lr=[0.00012955323035132495], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:47,744] [INFO] [timer.py:264:stop] epoch=0/micro_step=780/global_step=390, RunningAvgSamplesPerSec=16.243703713379237, CurrSamplesPerSec=16.086963069226528, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:47,745 - INFO - Step: 780, Epoch: 5, Loss: 0.4560331404209137
+2025-05-01 12:12:50,240 - INFO - Step: 790, Epoch: 5, Loss: 0.34912967681884766
+[2025-05-01 12:12:52,739] [INFO] [logging.py:107:log_dist] [Rank 0] step=400, skipped=0, lr=[0.00013010299956639813], mom=[[0.9, 0.999]]
+[2025-05-01 12:12:52,740] [INFO] [timer.py:264:stop] epoch=0/micro_step=800/global_step=400, RunningAvgSamplesPerSec=16.238176373466782, CurrSamplesPerSec=15.922139817446057, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:12:52,741 - INFO - Step: 800, Epoch: 5, Loss: 0.3178384006023407
+[2025-05-01 12:12:52,742] [INFO] [logging.py:107:log_dist] [Rank 0] [Torch] Checkpoint checkpoint-800 is about to be saved!
+[2025-05-01 12:12:54,881] [INFO] [logging.py:107:log_dist] [Rank 0] Saving model checkpoint: /root/autodl-tmp/V429/output/checkpoint-800/mp_rank_00_model_states.pt
+[2025-05-01 12:12:54,882] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /root/autodl-tmp/V429/output/checkpoint-800/mp_rank_00_model_states.pt...
+[2025-05-01 12:13:00,618] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /root/autodl-tmp/V429/output/checkpoint-800/mp_rank_00_model_states.pt.
+[2025-05-01 12:13:00,638] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /root/autodl-tmp/V429/output/checkpoint-800/bf16_zero_pp_rank_0_mp_rank_00_optim_states.pt...
+[2025-05-01 12:13:00,675] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /root/autodl-tmp/V429/output/checkpoint-800/bf16_zero_pp_rank_0_mp_rank_00_optim_states.pt.
+[2025-05-01 12:13:00,703] [INFO] [engine.py:3701:_save_zero_checkpoint] zero checkpoint saved /root/autodl-tmp/V429/output/checkpoint-800/bf16_zero_pp_rank_0_mp_rank_00_optim_states.pt
+[2025-05-01 12:13:00,704] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint checkpoint-800 is ready now!
+2025-05-01 12:13:00,707 - INFO - Checkpoint saved at /root/autodl-tmp/V429/output/checkpoint-800
+2025-05-01 12:13:03,277 - INFO - Step: 810, Epoch: 5, Loss: 0.40871813893318176
+[2025-05-01 12:13:05,758] [INFO] [logging.py:107:log_dist] [Rank 0] step=410, skipped=0, lr=[0.00013063919283598678], mom=[[0.9, 0.999]]
+[2025-05-01 12:13:05,759] [INFO] [timer.py:264:stop] epoch=0/micro_step=820/global_step=410, RunningAvgSamplesPerSec=16.228332488562103, CurrSamplesPerSec=16.128230563466804, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:13:05,759 - INFO - Step: 820, Epoch: 5, Loss: 0.3969730734825134
+2025-05-01 12:13:08,243 - INFO - Step: 830, Epoch: 5, Loss: 0.35536760091781616
+[2025-05-01 12:13:10,734] [INFO] [logging.py:107:log_dist] [Rank 0] step=420, skipped=0, lr=[0.000131162464519895], mom=[[0.9, 0.999]]
+[2025-05-01 12:13:10,736] [INFO] [timer.py:264:stop] epoch=0/micro_step=840/global_step=420, RunningAvgSamplesPerSec=16.224865978345722, CurrSamplesPerSec=15.951955960571373, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:13:10,736 - INFO - Step: 840, Epoch: 5, Loss: 0.2131221443414688
+2025-05-01 12:13:13,224 - INFO - Step: 850, Epoch: 5, Loss: 0.33047249913215637
+[2025-05-01 12:13:15,711] [INFO] [logging.py:107:log_dist] [Rank 0] step=430, skipped=0, lr=[0.00013167342277897932], mom=[[0.9, 0.999]]
+[2025-05-01 12:13:15,712] [INFO] [timer.py:264:stop] epoch=0/micro_step=860/global_step=430, RunningAvgSamplesPerSec=16.221618058163994, CurrSamplesPerSec=16.125138038827465, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:13:15,712 - INFO - Step: 860, Epoch: 5, Loss: 0.3829556405544281
+2025-05-01 12:13:18,190 - INFO - Step: 870, Epoch: 5, Loss: 0.3142140507698059
+[2025-05-01 12:13:20,672] [INFO] [logging.py:107:log_dist] [Rank 0] step=440, skipped=0, lr=[0.00013217263382430934], mom=[[0.9, 0.999]]
+[2025-05-01 12:13:20,673] [INFO] [timer.py:264:stop] epoch=0/micro_step=880/global_step=440, RunningAvgSamplesPerSec=16.219708727700713, CurrSamplesPerSec=16.048208520626467, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:13:20,674 - INFO - Step: 880, Epoch: 5, Loss: 0.36473333835601807
+2025-05-01 12:13:23,163 - INFO - Step: 890, Epoch: 5, Loss: 0.38705188035964966
+[2025-05-01 12:13:25,645] [INFO] [logging.py:107:log_dist] [Rank 0] step=450, skipped=0, lr=[0.00013266062568876718], mom=[[0.9, 0.999]]
+[2025-05-01 12:13:25,646] [INFO] [timer.py:264:stop] epoch=0/micro_step=900/global_step=450, RunningAvgSamplesPerSec=16.21700305039808, CurrSamplesPerSec=16.1636191994328, MemAllocated=2.58GB, MaxMemAllocated=10.38GB
+2025-05-01 12:13:25,646 - INFO - Step: 900, Epoch: 5, Loss: 0.4175354242324829
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb: epoch ▁▁▁▁▁▁▁▁▁▁▃▃▃▃▃▃▃▃▃▅▅▅▅▅▅▆▆▆▆▆▆▆▆▆▆█████
+wandb:  loss █▆▄▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  step ▁▁▁▁▁▂▂▂▂▃▃▃▃▃▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇▇████
+wandb: 
+wandb: Run summary:
+wandb: checkpoint checkpoint-800
+wandb:      epoch 5
+wandb:       loss 0.41754
+wandb:       step 900
+wandb: 
+wandb: 🚀 View run distinctive-dew-9 at: https://wandb.ai/6998gp_TLA/llama-training-20250429/runs/3thox39x
+wandb: ⭐️ View project at: https://wandb.ai/6998gp_TLA/llama-training-20250429
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20250501_120905-3thox39x/logs
+[2025-05-01 12:13:32,503] [INFO] [launch.py:351:main] Process 82513 exits successfully.
