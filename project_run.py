@@ -2,11 +2,12 @@ import os
 import json
 import torch
 import shutil
-import wandb  # Added for WandB
+import wandb
+import time
+import numpy as np
 from transformers import default_data_collator
 import logging
 import argparse
-import numpy as np
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Sequence
 import deepspeed
@@ -15,11 +16,13 @@ from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
     LlamaForCausalLM,
+    TrainingArguments as HFTrainingArguments,
     HfArgumentParser,
 )
-from datasets import load_dataset, load_from_disk
+from datasets import load_dataset, load_from_disk, concatenate_datasets
 from modeling_file.modeling_llama_moe import LlamaMoEForCausalLM
 from huggingface_hub import snapshot_download
+from math import ceil
 
 try:
     from safetensors import safe_open
@@ -56,7 +59,7 @@ def _tokenize_fn(strings: Sequence[str], tokenizer) -> Dict:
 def train_tokenize_function(examples, tokenizer):
     tokenized = tokenizer(
         examples['text'],
-        padding=False,
+        padding="max_length",
         truncation=True,
         max_length=tokenizer.model_max_length,
         return_attention_mask=True,
@@ -89,19 +92,21 @@ class TrainingArguments(HFTrainingArguments):
     do_train: bool = field(default=True)
     do_eval: bool = field(default=False)
     model_max_length: int = field(default=1024, metadata={"help": "最大序列长度"})
+    output_dir: str = field(default="/root/autodl-tmp/V429/output", metadata={"help": "Output directory for checkpoints"})
     remove_unused_columns: bool = field(default=False, metadata={"help": "保留数据集中未被模型 forward 使用的列"})
     deepspeed: str = field(default="/root/V429/ds_config.json", metadata={"help": "Path to DeepSpeed config file"})
-    save_interval: int = field(default=1000, metadata={"help": "Interval for saving checkpoints"})
+    save_interval: int = field(default=500, metadata={"help": "Interval for saving checkpoints"})
     resume_from_checkpoint: bool = field(default=False, metadata={"help": "Resume from checkpoint"})
     per_device_train_batch_size: int = field(default=8, metadata={"help": "Batch size per GPU"})
     gradient_accumulation_steps: int = field(default=2, metadata={"help": "Gradient accumulation steps"})
     logging_steps: int = field(default=10, metadata={"help": "Steps between logging"})
-    wandb_project: str = field(default="llama-training", metadata={"help": "WandB project name"})
+    wandb_project: str = field(default="llama-training-20250429", metadata={"help": "WandB project name"})
+    wandb_entity: str = field(default="6998gp_TLA", metadata={"help": "WandB entity name (team or organization)"})
     use_wandb: bool = field(default=True, metadata={"help": "Whether to use WandB for logging"})
 
 def build_model(model_args: ModelArguments, training_args: TrainingArguments, checkpoint_dir: Optional[str] = None):
     if not os.path.isdir(model_args.model_name_or_path):
-        logger.info(f"Downloading model from Hugging Face Hub: {model_args.model_name_or_path}")
+        logger.info(f"Downloading model from Hugging Face Hub: TinyLlama/TinyLlama-1.1B-Chat-v1.0")
         model_args.model_name_or_path = snapshot_download(
             repo_id="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
             cache_dir="/root/V429/hf_models"
@@ -120,15 +125,15 @@ def build_model(model_args: ModelArguments, training_args: TrainingArguments, ch
             duplicate_mlp(
                 ckpt_dir=model_args.model_name_or_path,
                 moe_dir=moe_weights_dir,
-                num_experts=8,
-                num_experts_per_token=2,
+                num_experts=2,
+                num_experts_per_token=1,
                 output_router_logits=True,
-                router_aux_loss_coef=0.02,
+                router_aux_loss_coef=0.05,
             )
             if model_args.router_strategy == "mixtral":
                 logger.info("执行 router 热启动：从 Mixtral 权重中加载 router 参数...")
                 conver_router(
-                    mixtral_model_path="path/to/chinese-mixtral-instruct",
+                    mixtral_model_path="/root/V429/hf_models/mixtral-instruct",
                     llama3_moe_router_warmboot=moe_weights_dir,
                 )
         model = LlamaMoEForCausalLM.from_pretrained(
@@ -163,6 +168,7 @@ def train(model_args: ModelArguments, data_args: DataArguments, training_args: T
     if training_args.use_wandb:
         wandb.init(
             project=training_args.wandb_project,
+            entity=training_args.wandb_entity,
             config={
                 "experiment_type": model_args.experiment_type,
                 "router_strategy": model_args.router_strategy,
@@ -180,6 +186,7 @@ def train(model_args: ModelArguments, data_args: DataArguments, training_args: T
                 "deepspeed": training_args.deepspeed
             }
         )
+        wandb_start_time = time.time()
 
     logger.info(f"Using DeepSpeed config: {training_args.deepspeed}")
     if not os.path.exists(training_args.deepspeed):
@@ -202,7 +209,11 @@ def train(model_args: ModelArguments, data_args: DataArguments, training_args: T
             "text": example["instruction"].strip() + " " + example["input"].strip() + " " + example["output"].strip()
         }
 
-    tokenized_dataset_path = os.path.join(data_args.data_path, "tokenized")
+    # 数据集重复 1 次，总样本 1444
+    raw_train_dataset = concatenate_datasets([raw_train_dataset, raw_train_dataset])
+    logger.info(f"Dataset repeated 1 time, total samples: {len(raw_train_dataset)}")
+
+    tokenized_dataset_path = os.path.join(data_args.data_path, "tokenized_repeated")
     if os.path.exists(tokenized_dataset_path):
         logger.info(f"Loading tokenized dataset from {tokenized_dataset_path}")
         train_dataset = load_from_disk(tokenized_dataset_path)
@@ -219,6 +230,7 @@ def train(model_args: ModelArguments, data_args: DataArguments, training_args: T
 
     model = build_model(model_args, training_args, checkpoint_dir=None)
 
+    # 修改：使用 requires_grad 筛选可训练参数
     model_parameters = [p for p in model.parameters() if p.requires_grad]
     model_engine, optimizer, train_dataloader, _ = deepspeed.initialize(
         args=training_args,
@@ -229,11 +241,21 @@ def train(model_args: ModelArguments, data_args: DataArguments, training_args: T
         config=training_args.deepspeed
     )
 
+    logger.info(f"DataLoader length: {len(train_dataloader)}")
+
     start_step = 0
     client_sd = {}
     if training_args.resume_from_checkpoint:
         logger.info(f"Resuming from checkpoint in {training_args.output_dir}")
-        _, client_sd = model_engine.load_checkpoint(training_args.output_dir, "latest")
+        checkpoint_dir = os.path.join(training_args.output_dir, "checkpoint-500")
+        if os.path.exists(checkpoint_dir):
+            logger.info(f"Loading checkpoint from {checkpoint_dir}")
+            _, client_sd = model_engine.load_checkpoint(training_args.output_dir, "checkpoint-500")
+        else:
+            logger.warning(f"No checkpoint found in {checkpoint_dir}, starting from scratch")
+            training_args.resume_from_checkpoint = False
+
+    if training_args.resume_from_checkpoint:
         start_step = client_sd.get('step', 0)
         for _ in range(start_step):
             next(train_dataloader, None)
@@ -241,37 +263,116 @@ def train(model_args: ModelArguments, data_args: DataArguments, training_args: T
     if training_args.do_train:
         logger.info("Starting training with DeepSpeed...")
         model_engine.train()
-        for step, batch in enumerate(train_dataloader, start=start_step):
-            batch = {k: v.to(model_engine.device) for k, v in batch.items()}
-            outputs = model_engine(**batch)
-            loss = outputs.loss
-            model_engine.backward(loss)
-            model_engine.step()
+        num_epochs = 5  # 设置 5 个 epoch
+        samples_per_epoch = len(train_dataset)  # 1444 样本
+        steps_per_epoch = len(train_dataloader)  # 使用实际 DataLoader 长度
+        total_steps = num_epochs * steps_per_epoch  # 5 × 361 ≈ 1805
+        logger.info(f"Expected samples per epoch: {samples_per_epoch}, Steps per epoch: {steps_per_epoch}, Total steps: {total_steps}")
 
-            if step % training_args.logging_steps == 0:
-                logger.info(f"Step: {step}, Loss: {loss.item()}")
-                if training_args.use_wandb and model_engine.global_rank == 0:
-                    wandb.log({"step": step, "loss": loss.item()})
+        global_step = start_step
+        step_start_time = time.time()
+        for epoch in range(num_epochs):
+            logger.info(f"Starting epoch {epoch + 1}/{num_epochs}")
+            epoch_step = 0
+            for batch in train_dataloader:
+                batch = {k: v.to(model_engine.device) for k, v in batch.items()}
+                outputs = model_engine(**batch)
+                loss = outputs.loss
+                model_engine.backward(loss)
+                model_engine.step()
 
-            if step % training_args.save_interval == 0 and step > start_step:
-                client_sd['step'] = step
-                ckpt_id = f"checkpoint-{step}"
-                model_engine.save_checkpoint(training_args.output_dir, ckpt_id, client_sd=client_sd)
-                tokenizer.save_pretrained(os.path.join(training_args.output_dir, ckpt_id))
-                logger.info(f"Checkpoint saved at {training_args.output_dir}/{ckpt_id}")
-                if training_args.use_wandb and model_engine.global_rank == 0:
-                    wandb.log({"checkpoint": ckpt_id})
+                global_step += 1
+                epoch_step += 1
 
-    if training_args.use_wandb:
-        wandb.finish()
+                if global_step % training_args.logging_steps == 0:
+                    step_end_time = time.time()
+                    step_time = (step_end_time - step_start_time) / training_args.logging_steps
+                    grad_norm = sum(p.grad.norm().item() for p in model_parameters if p.grad is not None)
+                    logger.info(f"Step: {global_step}, Epoch: {epoch + 1}, Epoch Step: {epoch_step}, Loss: {loss.item()}")
+                    if training_args.use_wandb and model_engine.global_rank == 0:
+                        wandb.log({
+                            "step": global_step,
+                            "epoch": epoch + 1,
+                            "epoch_step": epoch_step,
+                            "loss": loss.item(),
+                            "learning_rate": optimizer.param_groups[0]['lr'],
+                            "grad_norm": grad_norm,
+                            "gpu_memory_allocated_mb": torch.cuda.memory_allocated() / 1024**2,
+                            "gpu_memory_reserved_mb": torch.cuda.memory_reserved() / 1024**2,
+                            "epoch_progress": epoch_step / steps_per_epoch,
+                            "step_progress": global_step / total_steps,
+                            "training_time_sec": time.time() - wandb_start_time,
+                            "step_time_sec": step_time
+                        })
+                    step_start_time = time.time()
+
+                # 每 500 步输出专家频率（仅 MoE 模式）
+                if model_args.experiment_type == "moe" and global_step % 500 == 0:
+                    router_logits = outputs.router_logits if hasattr(outputs, "router_logits") else None
+                    if router_logits is not None:
+                        try:
+                            if isinstance(router_logits, tuple):
+                                router_logits = router_logits[0]  # 取第一个输出（如果为元组）
+                            # 计算 top-k 专家索引（基于 num_experts_per_token）
+                            _, selected_experts = torch.topk(router_logits, k=1, dim=-1)  # num_experts_per_token=1
+                            expert_counts = torch.bincount(selected_experts.flatten(), minlength=2)  # num_experts=2
+                            logger.info(f"Step: {global_step}, Expert selection counts: {expert_counts.tolist()}")
+                            if training_args.use_wandb and model_engine.global_rank == 0:
+                                wandb.log({"expert_selection_counts": expert_counts.tolist(), "step": global_step})
+                        except Exception as e:
+                            logger.warning(f"Failed to log expert selection counts: {str(e)}")
+
+                if global_step % training_args.save_interval == 0 and global_step > start_step:
+                    client_sd['step'] = global_step
+                    ckpt_id = f"checkpoint-{global_step}"
+                    model_engine.save_checkpoint(training_args.output_dir, ckpt_id)
+                    tokenizer.save_pretrained(os.path.join(training_args.output_dir, ckpt_id))
+                    client_sd_path = os.path.join(training_args.output_dir, ckpt_id, "client_sd.json")
+                    with open(client_sd_path, 'w', encoding='utf8') as f:
+                        json.dump(client_sd, f, indent=4)
+                    logger.info(f"Checkpoint saved at {training_args.output_dir}/{ckpt_id}")
+                    if training_args.use_wandb and model_engine.global_rank == 0:
+                        wandb.log({"checkpoint": ckpt_id})
+
+            logger.info(f"Epoch {epoch + 1} completed with {epoch_step} steps")
+
+        # 保存最终模型
+        client_sd['step'] = global_step
+        ckpt_id = "final_model"
+        model_engine.save_checkpoint(training_args.output_dir, ckpt_id)
+        tokenizer.save_pretrained(os.path.join(training_args.output_dir, ckpt_id))
+        client_sd_path = os.path.join(training_args.output_dir, ckpt_id, "client_sd.json")
+        with open(client_sd_path, 'w', encoding='utf8') as f:
+            json.dump(client_sd, f, indent=4)
+        logger.info(f"Final model saved at {training_args.output_dir}/{ckpt_id}")
+        if training_args.use_wandb and model_engine.global_rank == 0:
+            wandb.log({"final_model": ckpt_id})
+
+        # 训练完成后输出专家频率（仅 MoE 模式）
+        if model_args.experiment_type == "moe":
+            router_logits = outputs.router_logits if hasattr(outputs, "router_logits") else None
+            if router_logits is not None:
+                try:
+                    if isinstance(router_logits, tuple):
+                        router_logits = router_logits[0]
+                    _, selected_experts = torch.topk(router_logits, k=1, dim=-1)
+                    expert_counts = torch.bincount(selected_experts.flatten(), minlength=2)
+                    logger.info(f"Final step: {global_step}, Expert selection counts: {expert_counts.tolist()}")
+                    if training_args.use_wandb and model_engine.global_rank == 0:
+                        wandb.log({"final_expert_selection_counts": expert_counts.tolist(), "step": global_step})
+                except Exception as e:
+                    logger.warning(f"Failed to log final expert selection counts: {str(e)}")
+
+        if training_args.use_wandb:
+            wandb.finish()
 
 def duplicate_mlp(
         ckpt_dir: str,
         moe_dir: str,
-        num_experts: int = 8,
-        num_experts_per_token: int = 2,
+        num_experts: int = 2,
+        num_experts_per_token: int = 1,
         output_router_logits: bool = True,
-        router_aux_loss_coef: float = 0.02,
+        router_aux_loss_coef: float = 0.05,
 ):
     os.makedirs(moe_dir, exist_ok=True)
     for filename in tqdm(os.listdir(ckpt_dir), desc="Converting MLP to MoE experts"):
@@ -388,24 +489,54 @@ def safe_open_weight(model_path: str, filename: str) -> Dict:
             weights[key] = f.get_tensor(key)
     return weights
 
-def test_inference():
+def test_inference(model_args: ModelArguments, data_args: DataArguments, training_args: TrainingArguments):
     try:
-        from modeling_file.llama3_moe.modeling_llama_moe import LlamaMoEForCausalLM
-        from modeling_file.llama3_moe.tokenization_llama_fast import LlamaTokenizerFast
+        from transformers import AutoTokenizer
+        model_class = LlamaMoEForCausalLM if model_args.experiment_type == "moe" else AutoModelForCausalLM
     except ImportError:
-        print("请确保你已配置好自定义 LLaMA3-MoE 模型模块。")
+        print("请确保安装 transformers 库：pip install transformers")
         return
 
-    model_ckpt = "/root/V429/output/checkpoint-1000"
-    tokenizer = LlamaTokenizerFast.from_pretrained(model_ckpt, padding_side='left')
-    model = LlamaMoEForCausalLM.from_pretrained(model_ckpt, device_map="auto", use_cache=False)
+    model_ckpt = os.path.join(training_args.output_dir, "final_model")
+    tokenizer = AutoTokenizer.from_pretrained(model_ckpt, padding_side='left')
+    model = model_class.from_pretrained(
+        model_ckpt,
+        torch_dtype=torch.bfloat16 if training_args.bf16 else torch.float32,
+        device_map="auto",
+        trust_remote_code=True
+    )
 
-    text_list = ["Hello, what is your name?", "你好，你叫什么名字？", "今天天气怎么样？"]
-    tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.pad_token_id = tokenizer.eos_token_id
-    inputs = tokenizer(text_list, return_tensors="pt", padding=True).to("cuda" if torch.cuda.is_available() else "cpu")
-    output = model.generate(**inputs, pad_token_id=tokenizer.eos_token_id, max_new_tokens=100)
-    print(tokenizer.batch_decode(output))
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+
+    print("开始与模型对话（输入 'exit' 退出）：")
+    history = []
+    while True:
+        user_input = input("您: ")
+        if user_input.lower() == 'exit':
+            break
+        history.append({"role": "user", "content": user_input})
+        prompt = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history])
+        inputs = tokenizer(prompt, return_tensors="pt", padding=True).to("cuda" if torch.cuda.is_available() else "cpu")
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                pad_token_id=tokenizer.eos_token_id,
+                max_new_tokens=200,
+                do_sample=True,
+                top_p=0.9,
+                top_k=50,
+                temperature=0.7
+            )
+        response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        print(f"模型: {response}")
+        history.append({"role": "assistant", "content": response})
+
+    if training_args.use_wandb:
+        wandb.init(project=training_args.wandb_project, entity=training_args.wandb_entity, name="test-run")
+        wandb.log({"test_output": response})
+        wandb.finish()
 
 def main():
     parser = argparse.ArgumentParser(description="MoE vs Dense LLM Training Experiment")
@@ -422,7 +553,7 @@ def main():
     if args.run_mode == "train":
         train(model_args, data_args, training_args)
     elif args.run_mode == "test":
-        test_inference()
+        test_inference(model_args, data_args, training_args)
     else:
         print("无效的 run_mode 参数。")
 
