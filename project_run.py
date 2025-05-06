@@ -10,7 +10,9 @@ import logging
 import argparse
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Sequence
+import torch.distributed as dist
 import deepspeed
+import psutil
 from tqdm import tqdm
 from transformers import (
     AutoTokenizer,
@@ -23,6 +25,7 @@ from datasets import load_dataset, load_from_disk, concatenate_datasets
 from modeling_file.modeling_llama_moe import LlamaMoEForCausalLM
 from huggingface_hub import snapshot_download
 from math import ceil
+from torch.profiler import profile, schedule, ProfilerActivity, tensorboard_trace_handler
 
 try:
     from safetensors import safe_open
@@ -120,7 +123,8 @@ def build_model(model_args: ModelArguments, training_args: TrainingArguments, ch
         )
     else:
         moe_weights_dir = os.path.join("/root/V429/converted_moe", os.path.basename(model_args.model_name_or_path))
-        if not os.path.exists(moe_weights_dir):
+        # if not os.path.exists(moe_weights_dir):
+        if True:
             logger.info("转换 dense 权重为 MoE 权重...")
             duplicate_mlp(
                 ckpt_dir=model_args.model_name_or_path,
@@ -164,7 +168,6 @@ def compute_metrics_(prediction):
     return {"accuracy": accuracy}
 
 def train(model_args: ModelArguments, data_args: DataArguments, training_args: TrainingArguments):
-    # Initialize WandB
     if training_args.use_wandb:
         wandb.init(
             project=training_args.wandb_project,
@@ -188,10 +191,6 @@ def train(model_args: ModelArguments, data_args: DataArguments, training_args: T
         )
         wandb_start_time = time.time()
 
-    logger.info(f"Using DeepSpeed config: {training_args.deepspeed}")
-    if not os.path.exists(training_args.deepspeed):
-        raise FileNotFoundError(f"DeepSpeed config file not found at {training_args.deepspeed}")
-
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
         model_max_length=training_args.model_max_length,
@@ -209,16 +208,10 @@ def train(model_args: ModelArguments, data_args: DataArguments, training_args: T
             "text": example["instruction"].strip() + " " + example["input"].strip() + " " + example["output"].strip()
         }
 
-    # 数据集重复 1 次，总样本 1444
-    raw_train_dataset = concatenate_datasets([raw_train_dataset, raw_train_dataset])
-    logger.info(f"Dataset repeated 1 time, total samples: {len(raw_train_dataset)}")
-
     tokenized_dataset_path = os.path.join(data_args.data_path, "tokenized_repeated")
     if os.path.exists(tokenized_dataset_path):
-        logger.info(f"Loading tokenized dataset from {tokenized_dataset_path}")
         train_dataset = load_from_disk(tokenized_dataset_path)
     else:
-        logger.info("Tokenizing dataset and saving to disk...")
         train_dataset = raw_train_dataset.map(concat_fields, remove_columns=raw_train_dataset.column_names)
         train_dataset = train_dataset.map(
             lambda examples: train_tokenize_function(examples, tokenizer),
@@ -228,10 +221,9 @@ def train(model_args: ModelArguments, data_args: DataArguments, training_args: T
         )
         train_dataset.save_to_disk(tokenized_dataset_path)
 
-    model = build_model(model_args, training_args, checkpoint_dir=None)
-
-    # 修改：使用 requires_grad 筛选可训练参数
+    model = build_model(model_args, training_args)
     model_parameters = [p for p in model.parameters() if p.requires_grad]
+
     model_engine, optimizer, train_dataloader, _ = deepspeed.initialize(
         args=training_args,
         model=model,
@@ -241,130 +233,87 @@ def train(model_args: ModelArguments, data_args: DataArguments, training_args: T
         config=training_args.deepspeed
     )
 
-    logger.info(f"DataLoader length: {len(train_dataloader)}")
+    global_step = 0
+    num_epochs = 5
+    steps_per_epoch = len(train_dataloader)
+    total_steps = num_epochs * steps_per_epoch
+    step_start_time = time.time()
 
-    start_step = 0
-    client_sd = {}
-    if training_args.resume_from_checkpoint:
-        logger.info(f"Resuming from checkpoint in {training_args.output_dir}")
-        checkpoint_dir = os.path.join(training_args.output_dir, "checkpoint-500")
-        if os.path.exists(checkpoint_dir):
-            logger.info(f"Loading checkpoint from {checkpoint_dir}")
-            _, client_sd = model_engine.load_checkpoint(training_args.output_dir, "checkpoint-500")
-        else:
-            logger.warning(f"No checkpoint found in {checkpoint_dir}, starting from scratch")
-            training_args.resume_from_checkpoint = False
+    profiler = profile(
+        activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+        schedule=schedule(wait=1, warmup=1, active=10, repeat=1),
+        on_trace_ready=tensorboard_trace_handler(training_args.output_dir + "/profiler_logs"),
+        record_shapes=True,
+        profile_memory=True,
+        with_stack=True,
+    )
 
-    if training_args.resume_from_checkpoint:
-        start_step = client_sd.get('step', 0)
-        for _ in range(start_step):
-            next(train_dataloader, None)
+    model_engine.train()
+    epoch_ckpt_info = []  # 收集 epoch checkpoint info
 
-    if training_args.do_train:
-        logger.info("Starting training with DeepSpeed...")
-        model_engine.train()
-        num_epochs = 5  # 设置 5 个 epoch
-        samples_per_epoch = len(train_dataset)  # 1444 样本
-        steps_per_epoch = len(train_dataloader)  # 使用实际 DataLoader 长度
-        total_steps = num_epochs * steps_per_epoch  # 5 × 361 ≈ 1805
-        logger.info(f"Expected samples per epoch: {samples_per_epoch}, Steps per epoch: {steps_per_epoch}, Total steps: {total_steps}")
-
-        global_step = start_step
-        step_start_time = time.time()
+    with profiler:
         for epoch in range(num_epochs):
-            logger.info(f"Starting epoch {epoch + 1}/{num_epochs}")
+            best_epoch_loss = float('inf')
+            epoch_bar = tqdm(train_dataloader, desc=f"Epoch {epoch+1}/{num_epochs}")
             epoch_step = 0
-            for batch in train_dataloader:
+
+            for batch in epoch_bar:
                 batch = {k: v.to(model_engine.device) for k, v in batch.items()}
                 outputs = model_engine(**batch)
                 loss = outputs.loss
                 model_engine.backward(loss)
                 model_engine.step()
+                profiler.step()
 
                 global_step += 1
                 epoch_step += 1
 
+                # 更新进度条
+                epoch_bar.set_postfix({
+                    "loss": loss.item(),
+                    "lr": optimizer.param_groups[0]["lr"]
+                })
+
+                # 更新 epoch 最小 loss
+                if loss.item() < best_epoch_loss:
+                    best_epoch_loss = loss.item()
+
+                # wandb 日志记录
                 if global_step % training_args.logging_steps == 0:
                     step_end_time = time.time()
                     step_time = (step_end_time - step_start_time) / training_args.logging_steps
                     grad_norm = sum(p.grad.norm().item() for p in model_parameters if p.grad is not None)
-                    logger.info(f"Step: {global_step}, Epoch: {epoch + 1}, Epoch Step: {epoch_step}, Loss: {loss.item()}")
-                    if training_args.use_wandb and model_engine.global_rank == 0:
-                        wandb.log({
-                            "step": global_step,
-                            "epoch": epoch + 1,
-                            "epoch_step": epoch_step,
-                            "loss": loss.item(),
-                            "learning_rate": optimizer.param_groups[0]['lr'],
-                            "grad_norm": grad_norm,
-                            "gpu_memory_allocated_mb": torch.cuda.memory_allocated() / 1024**2,
-                            "gpu_memory_reserved_mb": torch.cuda.memory_reserved() / 1024**2,
-                            "epoch_progress": epoch_step / steps_per_epoch,
-                            "step_progress": global_step / total_steps,
-                            "training_time_sec": time.time() - wandb_start_time,
-                            "step_time_sec": step_time
-                        })
+
+                    mem = psutil.virtual_memory()
+                    wandb.log({
+                        "step": global_step,
+                        "epoch": epoch + 1,
+                        "epoch_step": epoch_step,
+                        "loss": loss.item(),
+                        "learning_rate": optimizer.param_groups[0]["lr"],
+                        "grad_norm": grad_norm,
+                        "cpu_percent": psutil.cpu_percent(),
+                        "ram_used_mb": mem.used / 1024**2,
+                        "ram_total_mb": mem.total / 1024**2,
+                        "gpu_memory_allocated_mb": torch.cuda.memory_allocated() / 1024**2,
+                        "gpu_memory_reserved_mb": torch.cuda.memory_reserved() / 1024**2,
+                        "epoch_progress": epoch_step / steps_per_epoch,
+                        "step_progress": global_step / total_steps,
+                        "training_time_sec": time.time() - wandb_start_time,
+                        "step_time_sec": step_time
+                    })
                     step_start_time = time.time()
 
-                # 每 500 步输出专家频率（仅 MoE 模式）
-                if model_args.experiment_type == "moe" and global_step % 500 == 0:
-                    router_logits = outputs.router_logits if hasattr(outputs, "router_logits") else None
-                    if router_logits is not None:
-                        try:
-                            if isinstance(router_logits, tuple):
-                                router_logits = router_logits[0]  # 取第一个输出（如果为元组）
-                            # 计算 top-k 专家索引（基于 num_experts_per_token）
-                            _, selected_experts = torch.topk(router_logits, k=1, dim=-1)  # num_experts_per_token=1
-                            expert_counts = torch.bincount(selected_experts.flatten(), minlength=2)  # num_experts=2
-                            logger.info(f"Step: {global_step}, Expert selection counts: {expert_counts.tolist()}")
-                            if training_args.use_wandb and model_engine.global_rank == 0:
-                                wandb.log({"expert_selection_counts": expert_counts.tolist(), "step": global_step})
-                        except Exception as e:
-                            logger.warning(f"Failed to log expert selection counts: {str(e)}")
-
-                if global_step % training_args.save_interval == 0 and global_step > start_step:
-                    client_sd['step'] = global_step
-                    ckpt_id = f"checkpoint-{global_step}"
-                    model_engine.save_checkpoint(training_args.output_dir, ckpt_id)
-                    tokenizer.save_pretrained(os.path.join(training_args.output_dir, ckpt_id))
-                    client_sd_path = os.path.join(training_args.output_dir, ckpt_id, "client_sd.json")
-                    with open(client_sd_path, 'w', encoding='utf8') as f:
-                        json.dump(client_sd, f, indent=4)
-                    logger.info(f"Checkpoint saved at {training_args.output_dir}/{ckpt_id}")
-                    if training_args.use_wandb and model_engine.global_rank == 0:
-                        wandb.log({"checkpoint": ckpt_id})
-
-            logger.info(f"Epoch {epoch + 1} completed with {epoch_step} steps")
-
-        # 保存最终模型
-        client_sd['step'] = global_step
-        ckpt_id = "final_model"
+        ckpt_id = f"epoch{epoch+1}_best"
         model_engine.save_checkpoint(training_args.output_dir, ckpt_id)
         tokenizer.save_pretrained(os.path.join(training_args.output_dir, ckpt_id))
-        client_sd_path = os.path.join(training_args.output_dir, ckpt_id, "client_sd.json")
-        with open(client_sd_path, 'w', encoding='utf8') as f:
-            json.dump(client_sd, f, indent=4)
-        logger.info(f"Final model saved at {training_args.output_dir}/{ckpt_id}")
-        if training_args.use_wandb and model_engine.global_rank == 0:
-            wandb.log({"final_model": ckpt_id})
+        with open(os.path.join(training_args.output_dir, ckpt_id, "loss.txt"), "w") as f:
+            f.write(str(best_epoch_loss))
+        epoch_ckpt_info.append((ckpt_id, best_epoch_loss))
 
-        # 训练完成后输出专家频率（仅 MoE 模式）
-        if model_args.experiment_type == "moe":
-            router_logits = outputs.router_logits if hasattr(outputs, "router_logits") else None
-            if router_logits is not None:
-                try:
-                    if isinstance(router_logits, tuple):
-                        router_logits = router_logits[0]
-                    _, selected_experts = torch.topk(router_logits, k=1, dim=-1)
-                    expert_counts = torch.bincount(selected_experts.flatten(), minlength=2)
-                    logger.info(f"Final step: {global_step}, Expert selection counts: {expert_counts.tolist()}")
-                    if training_args.use_wandb and model_engine.global_rank == 0:
-                        wandb.log({"final_expert_selection_counts": expert_counts.tolist(), "step": global_step})
-                except Exception as e:
-                    logger.warning(f"Failed to log final expert selection counts: {str(e)}")
-
-        if training_args.use_wandb:
-            wandb.finish()
+    if training_args.use_wandb:
+        wandb.log({"final_best_checkpoint": epoch+1})
+        wandb.finish()
 
 def duplicate_mlp(
         ckpt_dir: str,
