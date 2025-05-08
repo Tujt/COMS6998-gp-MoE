@@ -132,3 +132,60 @@ Eval:
 6. (5) Eval MOE model (AskNews-input-output MOE)
 [7]. (1) LoRA model (Raw model + AskNews-input-output) + AskNews-input
 [8]. (0) Eval Llama3.2 1b model + AskNews-input (Tom)
+
+Thanks for the clarification! Here's the revised **Results & Evaluation** section for your README, making it explicit that **all charts compare the three models: Dense (1 GPU), Dense (2 GPUs), and MoE (2 GPUs)**.
+
+---
+
+## Results & Evaluation
+
+We trained and evaluated three variants of TinyLlama-1.1B on the **AskNews-NER-v0** dataset to compare dense and sparse (MoE) fine-tuning strategies under compute constraints. Each model was assessed on quality, training efficiency, and resource usage.
+
+### Overall Performance Metrics
+
+| Model                     | BLEU              | ROUGE-L           | METEOR            | Cosine Sim.      | NER Overlap       |
+| ------------------------- | ----------------- | ----------------- | ----------------- | ---------------- | ----------------- |
+| Dense (1 GPU)             | **0.256** (+848%) | **0.448** (+113%) | 0.382 (+101%)     | **0.556** (+39%) | **0.292** (+630%) |
+| Dense (2 GPUs)            | 0.252 (+833%)     | 0.436 (+108%)     | **0.383** (+102%) | 0.551 (+37%)     | 0.291 (+628%)     |
+| MoE (2 GPUs)              | 0.221 (+718%)     | 0.407 (+94%)      | 0.345 (+82%)      | 0.498 (+24%)     | 0.263 (+558%)     |
+| TinyLlama-1.1B (original) | 0.027             | 0.210             | 0.190             | 0.401            | 0.040             |
+
+> Source: `eval/summary_metrics.csv`
+
+**Key Takeaways:**
+
+* Dense models consistently outperform MoE across all metrics.
+* All fine-tuned models substantially improve over the original TinyLlama base.
+* MoE performs reasonably but lags behind in both quality and efficiency.
+
+### Training Dynamics and Resource Usage (All 3 Models)
+
+The plots below show **side-by-side comparisons of all three models** throughout training:
+
+**Dense (1 GPU)**
+**Dense (2 GPUs with ZeRO-2)**
+**MoE (2 GPUs with top-1 routing)**
+
+| Metric                  | Plot                                                    |
+| ----------------------- | ------------------------------------------------------- |
+| Training Loss Over Time | ![Training Loss](eval/training_loss_over_time.png)      |
+| Step Time Over Time     | ![Step Time](eval/step_time_over_time.png)              |
+| GPU Memory Reserved     | ![GPU Reserved](eval/gpu_memory_reserved_over_time.png) |
+| GPU Memory Used         | ![GPU Used](eval/gpu_memory_used_over_time.png)         |
+| Host RAM Usage          | ![RAM Usage](eval/ram_usage_over_time.png)              |
+
+**Observations:**
+
+* **Step Time:** Dense (1 GPU) is fastest (\~0.4s), while MoE is slowest (\~1.6s) due to routing overhead.
+* **GPU Efficiency:** Dense (2 GPU) with ZeRO-2 uses the least GPU memory (\~10 GB) despite running across two devices.
+* **MoE Overhead:** MoE uses more GPU memory (\~16.5 GB) and RAM (\~90 GB) due to expert routing and duplication.
+
+### Profiler Insights
+
+Using PyTorch Profiler + DeepSpeed tracing:
+
+* **MoE vs. Dense:** MoE adds \~6.9s per profiling window from routing and tensor operations like `index_put`, `nonzero`, and extra `mm` ops.
+* **Dense (2 GPUs):** ZeRO-2 improves memory use but introduces communication latency (\~8.5ms/step from `allreduce` and `record_param_comms`).
+
+## WanDB Link
+https://wandb.ai/6998gp_TLA/projects
