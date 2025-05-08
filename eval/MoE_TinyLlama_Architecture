@@ -1,0 +1,44 @@
+digraph MoE_TinyLlama {
+	fontsize=10 rankdir=LR
+	A1 [label="Tokenizer
+(HF, max_len=1024)" shape=box]
+	A2 [label="Concatenate:
+instruction + input + output" shape=box]
+	A3 [label="Token Cache
+(disk-backed)" shape=box]
+	B1 [label="Embedding Layer" shape=box]
+	B2 [label="Self-Attention Layers
+(24×, shared)" shape=box]
+	B3 [label="MoE Block
+(N=2 experts, Top-1)" fillcolor=lightblue shape=box style=filled]
+	subgraph cluster_moe {
+		label="MoE Layer Detail" style=dashed
+		C1 [label="Router
+(Linear logits)" shape=ellipse]
+		C2 [label="Top-1 Routing" shape=box]
+		C3 [label="Expert 0" shape=box]
+		C4 [label="Expert 1" shape=box]
+		C1 -> C2
+		C2 -> C3 [label="route if top-1"]
+		C2 -> C4 [label="route if top-1"]
+	}
+	D1 [label="LM Head
+Linear(hidden → vocab)" shape=box]
+	D2 [label="Loss:
+CrossEntropy + λ * aux_loss" shape=box]
+	subgraph cluster_train {
+		label="Training Setup" style=dotted
+		T1 [label="DeepSpeed ZeRO-2
+Adam, bf16, A100 x2"]
+		T2 [label="Grad Accum = 2
+Batch Size = 8"]
+		T1 -> T2
+	}
+	A1 -> A2
+	A2 -> A3
+	A3 -> B1
+	B1 -> B2
+	B2 -> B3
+	B3 -> D1
+	D1 -> D2
+}

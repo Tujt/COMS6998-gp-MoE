@@ -34,11 +34,15 @@ run_training() {
   echo "✅ Training complete for $PROJECT_NAME"
 }
 
-# 模型 1：原始设置（moe，2卡）
-#run_training "/root/autodl-tmp/V429/exp_moe_batch_8" 2 "moe" "random" "llama-training-20250504-ltx-exp-moe-batch-8"
 
-# 模型 2：dense，1卡
-#run_training "/root/autodl-tmp/V429/exp_dense_batch_8" 1 "dense" "none" "llama-training-20250504-ltx-exp-dense1gpu-batch-8"
+# 模型 1：dense，1卡
+run_training "/root/autodl-tmp/V429/exp_dense_1gpu_batch_8" 1 "dense" "none" "llama-training-20250504-ltx-exp-dense1gpu-batch-8"
+
+# 模型 2：dense，2卡
+run_training "/root/autodl-tmp/V429/exp_dense_batch_8" 1 "dense" "none" "llama-training-20250504-ltx-exp-dense-batch-8"
+
+# 模型 3：moe，2卡
+run_training "/root/autodl-tmp/V429/exp_moe_batch_8" 2 "moe" "random" "llama-training-20250504-ltx-exp-moe-batch-8"
 
 # 模型 3：moe，1卡 OOM
-#run_training "/root/autodl-tmp/V429/exp_moe_1gpu_batch_4" 1 "moe" "random" "llama-training-20250504-ltx-exp-moe1gpu-batch-4"
+run_training "/root/autodl-tmp/V429/exp_moe_1gpu_batch_4" 1 "moe" "random" "llama-training-20250504-ltx-exp-moe1gpu-batch-4"
