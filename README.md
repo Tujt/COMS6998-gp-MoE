@@ -33,16 +33,6 @@ This repository includes all code, training scripts, and configuration files for
 ./train_all.sh
 ``
 
-- Run baseline, with wandb:
-``
-python <name_of_program> --experiment_type dense --model_name_or_path "TinyLlama/TinyLlama-1.1B-Chat-v1.0" --data_path 
-"dataset\flan1m_2.5percent" --output_dir "outputs\dense_baseline" --use_lora False 
---per_device_train_batch_size 1 --gradient_accumulation_steps 1 --learning_rate 2e-5 
---num_train_epochs 1 --logging_steps 10 --save_strategy epoch --bf16 False --fp16 True --do_train True --model_max_length 512 --gradient_checkpointing True
---wandb_project <name_of_project> --run_name <name_of_run> --wandb_entity <name of team>
-``
----
-
 ## Results & Evaluation
 
 We trained and evaluated three variants of TinyLlama-1.1B on the **AskNews-NER-v0** dataset to compare dense and sparse (MoE) fine-tuning strategies under compute constraints. Each model was assessed on quality, training efficiency, and resource usage.
