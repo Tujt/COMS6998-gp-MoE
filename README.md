@@ -1,4 +1,5 @@
 # COMS6998-gp-MoE
+## Introduction
 This is the groupwork of the course COMS6998 High-Performance Machine Learning in Columbia University, Spring 2025. The group Menbers are Tom, Layton and Andy.
 
 This project explores the integration of Mixture-of-Experts (MoE) architectures into a TinyLlama-based LLM to improve training efficiency without sacrificing performance. MoE models activate only a subset of the network’s parameters per input, enabling high-capacity modeling with reduced compute overhead. By applying sparse expert routing, we aim to build a more scalable model that is friendly to resource-constrained environments.
@@ -14,6 +15,11 @@ To ensure valid evaluation, we fine-tune on AskNews-NER-v0, a curated dataset no
 We conduct head-to-head comparisons of dense and MoE variants under identical training setups, tracking both performance (e.g., F1-score) and efficiency metrics (e.g., GPU memory usage, convergence speed). Our findings aim to inform the design of smaller, deployable LLMs that remain performant even under tight resource constraints.
 
 This repository includes all code, training scripts, and configuration files for reproducing our experiments.
+
+## Code Repository:
+project_run.py is the main code used to train the models.
+req.txt and set_up.sh are used for set up the environment for training.
+ds_config.json is the configuration file for DeepSpeed, defining optimization strategies and hyperparameters for distributed training.
 
 ## Setup (Windows)
 1. Install conda
