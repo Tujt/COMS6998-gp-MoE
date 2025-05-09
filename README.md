@@ -1,6 +1,20 @@
 # COMS6998-gp-MoE
 This is the groupwork of the course COMS6998 High-Performance Machine Learning in Columbia University, Spring 2025. The group Menbers are Tom, Layton and Andy.
 
+This project explores the integration of Mixture-of-Experts (MoE) architectures into a TinyLlama-based LLM to improve training efficiency without sacrificing performance. MoE models activate only a subset of the network’s parameters per input, enabling high-capacity modeling with reduced compute overhead. By applying sparse expert routing, we aim to build a more scalable model that is friendly to resource-constrained environments.
+
+Our goals are twofold:
+
+Evaluate whether a 1B-parameter MoE-enhanced TinyLlama can match or outperform its dense version on NER tasks.
+
+Investigate how optimization techniques like DeepSpeed ZeRO-3 and expert offloading can further reduce training costs and memory usage.
+
+To ensure valid evaluation, we fine-tune on AskNews-NER-v0, a curated dataset not seen during TinyLlama’s pretraining. This ensures improvements come from actual learning rather than memorization.
+
+We conduct head-to-head comparisons of dense and MoE variants under identical training setups, tracking both performance (e.g., F1-score) and efficiency metrics (e.g., GPU memory usage, convergence speed). Our findings aim to inform the design of smaller, deployable LLMs that remain performant even under tight resource constraints.
+
+This repository includes all code, training scripts, and configuration files for reproducing our experiments.
+
 ## Setup (Windows)
 1. Install conda
 2. Create conda env: `conda create --name <env> --file req.txt` or use set_up.sh by `./set_up.sh` (May need to use `chmod +x` first)
@@ -9,17 +23,14 @@ This is the groupwork of the course COMS6998 High-Performance Machine Learning i
 6. Run one of the following commands.
 
 ## Commands
-- Run baseline (using `TinyLlama/TinyLlama-1.1B-Chat-v1.0`):
+- Training all the models:
 ``
-python project.py --experiment_type dense --model_name_or_path "TinyLlama/TinyLlama-1.1B-Chat-v1.0" --data_path 
-"dataset\flan1m_2.5percent" --output_dir "outputs\dense_baseline" --use_lora False 
---per_device_train_batch_size 1 --gradient_accumulation_steps 1 --learning_rate 2e-5 
---num_train_epochs 1 --logging_steps 10 --save_strategy epoch --bf16 False --fp16 True --do_train True --model_max_length 512 --gradient_checkpointing True
+./train_all.sh
 ``
 
-- Run MoE + Router Random (using `TinyLlama/TinyLlama-1.1B-Chat-v1.0`):
+- Train a specific model and evaluate it:
 ``
- python project.py --experiment_type moe --router_strategy random --model_name_or_path "TinyLlama/TinyLlama-1.1B-Chat-v1.0" --data_path "dataset/flan1m_2.5percent" --output_dir "outputs/moe_router_random" --use_lora False --per_device_train_batch_size 1 --gradient_accumulation_steps 8 --learning_rate 2e-5 --num_train_epochs 1 --logging_steps 10 --save_strategy epoch --bf16 False --fp16 True --do_train True --model_max_length 512 --gradient_checkpointing True
+./train_all.sh
 ``
 
 - Run baseline, with wandb:
@@ -30,28 +41,6 @@ python <name_of_program> --experiment_type dense --model_name_or_path "TinyLlama
 --num_train_epochs 1 --logging_steps 10 --save_strategy epoch --bf16 False --fp16 True --do_train True --model_max_length 512 --gradient_checkpointing True
 --wandb_project <name_of_project> --run_name <name_of_run> --wandb_entity <name of team>
 ``
-
-
-Eval:
-1. Raw model + AskNews-input
-2. Baseline model (AskNews-input-output) + AskNews-input
-3. MOE model (AskNews-input-output MOE)
-[4]. LoRA model (Raw model + AskNews-input-output) + AskNews-input
-[5]. Llama3.2 1b model + AskNews-input
-
-
-1. (0) Fix project.py to train on TinyLlama 1b (Tom)
-2. (0) Zero3 + 2 GPU configuration (test on andrijdavid/Llama3-1B-Base) (Layton + Jingtian)
-2.2. (2) Double check WanDB Metrics
-3. (1,2,2.2) Train on TinyLlama 1b + AskNews (Baseline)
-4. (3) Eval Baseline model (AskNews-input-output) + AskNews-input
-5. (3) Train on TinyLlama 1b + AskNews (MOE model)
-6. (5) Eval MOE model (AskNews-input-output MOE)
-[7]. (1) LoRA model (Raw model + AskNews-input-output) + AskNews-input
-[8]. (0) Eval Llama3.2 1b model + AskNews-input (Tom)
-
-Thanks for the clarification! Here's the revised **Results & Evaluation** section for your README, making it explicit that **all charts compare the three models: Dense (1 GPU), Dense (2 GPUs), and MoE (2 GPUs)**.
-
 ---
 
 ## Results & Evaluation
