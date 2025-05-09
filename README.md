@@ -17,9 +17,8 @@ We conduct head-to-head comparisons of dense and MoE variants under identical tr
 This repository includes all code, training scripts, and configuration files for reproducing our experiments.
 
 ## Code Repository:
-Main components:
+Main components:  
 project_run.py is the main code used to train the models.  
-
 req.txt and set_up.sh are used for set up the environment for training.  
 ds_config.json is the configuration file for DeepSpeed, defining optimization strategies and hyperparameters for distributed training.  
 train_all.sh and train_single+eval.sh are the scripts for running the training.
