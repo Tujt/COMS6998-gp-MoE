@@ -41,7 +41,7 @@ On the Virtual Machine: We put these codes in /root/V429.
 
 - Train a specific model and evaluate it:
 ``
-./train_all.sh
+./train_single+eval.sh
 ``
 
 ## Results & Evaluation
