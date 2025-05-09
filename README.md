@@ -18,14 +18,14 @@ This repository includes all code, training scripts, and configuration files for
 
 ## Code Repository:
 Main components:  
-project_run.py is the main code used to train the models.  
-req.txt and set_up.sh are used for set up the environment for training.  
-ds_config.json is the configuration file for DeepSpeed, defining optimization strategies and hyperparameters for distributed training.  
-train_all.sh and train_single+eval.sh are the scripts for running the training.
-1.eval.py in the folder named "eval" is the code used for evaluation.
-1.data_preprocessing.py is the file for data preprocessing.
+`project_run.py` is the main code used to train the models.  
+`req.txt` and `set_up.sh` are used for set up the environment for training.  
+`ds_config.json` is the configuration file for DeepSpeed, defining optimization strategies and hyperparameters for distributed training.  
+`train_all.sh` and `train_single+eval.sh` are the scripts for running the training.
+`1.eval.py` in the folder named "eval" is the code used for evaluation.
+`1.data_preprocessing.py` is the file for data preprocessing.
 
-On the Virtual Machine: We put these codes in /root/V429.
+On the Virtual Machine: We put these codes in `/root/V429`.
 
 ## Setup (Windows)
 1. Install conda
