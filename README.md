@@ -3,7 +3,7 @@ This is the groupwork of the course COMS6998 High-Performance Machine Learning i
 
 ## Setup (Windows)
 1. Install conda
-2. Create conda env: `conda create --name <env> --file req.txt`(Simple Version: use set_up.sh. May need to use chmod +x)
+2. Create conda env: `conda create --name <env> --file req.txt` or use set_up.sh by `./set_up.sh` (May need to use `chmod +x` first)
 4. Download `https://huggingface.co/datasets/cognitivecomputations/dolphin/blob/main/flan1m-alpaca-uncensored-deduped.jsonl` and save to `./dataset`
 5. Run `1.data_preprocessing.py`
 6. Run one of the following commands.
@@ -31,34 +31,6 @@ python <name_of_program> --experiment_type dense --model_name_or_path "TinyLlama
 --wandb_project <name_of_project> --run_name <name_of_run> --wandb_entity <name of team>
 ``
 
--Run project_single.py on A100:
-dense:
-``
-deepspeed project_single.py \
-  --run_mode train \
-  --output_dir /root/V429/output \
-  --per_device_train_batch_size 8 \
-  --gradient_accumulation_steps 2 \
-  --model_max_length 1024 \
-  --logging_steps 10 \
-  --save_interval 1000 \
-  --bf16 \
-  --deepspeed /root/V429/ds_config.json
-``
-MoE:
-``
-deepspeed project_single.py \
-  --run_mode train \
-  --output_dir /root/V429/output \
-  --experiment_type moe \
-  --per_device_train_batch_size 8 \
-  --gradient_accumulation_steps 2 \
-  --model_max_length 1024 \
-  --logging_steps 10 \
-  --save_interval 1000 \
-  --bf16 \
-  --deepspeed /root/V429/ds_config.json
-``
 - Run project_run.py on A100:
 Dense:
 ``
@@ -96,24 +68,6 @@ deepspeed /root/V429/project_run.py \
   --router_strategy random
 ``
 
-MoE mixtral:
-``
-deepspeed /root/V429/project_run.py \
-  --run_mode train \
-  --output_dir /root/autodl-tmp/V429/output \
-  --per_device_train_batch_size 8 \
-  --gradient_accumulation_steps 2 \
-  --model_max_length 1024 \
-  --logging_steps 10 \
-  --save_interval 400 \
-  --bf16 \
-  --use_wandb \
-  --wandb_project llama-training-20250429 \
-  --wandb_entity 6998gp_TLA \
-  --deepspeed /root/V429/ds_config.json \
-  --experiment_type moe \
-  --router_strategy mixtral
-``
 
 Eval:
 1. Raw model + AskNews-input
