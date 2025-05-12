@@ -88,48 +88,47 @@ Using PyTorch Profiler + DeepSpeed tracing:
 
 ### A. Requirements
 
-Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
+1. Install conda
+2. Create conda env: `conda create --name <env> ` and use set_up.sh by `./set_up.sh` (May need to use `chmod +x` first)
+4. Download the whole project to the repository `/root/V429` (for example, the repository of project_run.py should be `/root/V429/project_run.py`)
+5. Run `1.data_preprocessing.py`
 ---
 
 B. Wandb Dashboard
 
-View training and evaluation metrics here: Wandb Dashboard Link
-(Replace with actual link)
+View training and evaluation metrics here: https://wandb.ai/6998gp_TLA/projects
 
 ---
 
 ### C. Specify for Training or For Inference or if Both 
 
-To train the model from scratch:
-```bash
-python train.py --config configs/default.yaml
-```
+## Commands
+- Training all the models:
+``
+./train_all.sh
+``
+
+- Train a specific model and evaluate it:
+``
+./train_single+eval.sh
+``
 
 ---
 
 ### D. Evaluation
 
-To evaluate the trained model:
-```bash
-python eval.py --weights checkpoints/best_model.pth
-```
+As shown in the previous part
 
 ---
 
 ### E. Quickstart: Minimum Reproducible Result
 
-To reproduce our minimum reported result (e.g., XX.XX% accuracy), run:
+To reproduce our minimum reported result, run:
 
 ```bash
-# Step 1: Set up environment
-pip install -r requirements.txt
+# Step 1: Follow the steps in the "Requirements" part
 
-# Step 2: Download dataset
-bash scripts/download_dataset.sh  # if applicable
+# Step 2: Run training
 
 # Step 3: Run training (or skip if checkpoint is provided)
 python train.py --config configs/default.yaml
@@ -141,9 +140,23 @@ python eval.py --weights checkpoints/best_model.pth
 ---
 
 ## 5. Notes (up to you)
-- All scripts are located in `scripts/`, `train.py`, `eval.py`, and `configs/`.
-- Trained Model are saved in `models/`.
-- Contact information
+- Main components are :  
+`project_run.py` is the main code used to train the models.  
+`req.txt` and `set_up.sh` are used for set up the environment for training.  
+`ds_config.json` is the configuration file for DeepSpeed, defining optimization strategies and hyperparameters for distributed training.  
+`train_all.sh` and `train_single+eval.sh` are the scripts for running the training.  
+`1.eval.py` in the folder named "eval" is the code used for evaluation.  
+`1.data_preprocessing.py` is the file for data preprocessing.
+
+- Contact information: email: `<UNI>@columbia.edu`
+
+
+
+
+
+Drafts:
+
+
 # COMS6998-gp-MoE
 ## Introduction
 This is the groupwork of the course COMS6998 High-Performance Machine Learning in Columbia University, Spring 2025. The group Menbers are Tom, Layton and Andy.
@@ -175,8 +188,8 @@ On the Virtual Machine: We put these codes in `/root/V429`.
 
 ## Setup (Windows)
 1. Install conda
-2. Create conda env: `conda create --name <env> --file req.txt` or use set_up.sh by `./set_up.sh` (May need to use `chmod +x` first)
-4. Download `https://huggingface.co/datasets/cognitivecomputations/dolphin/blob/main/flan1m-alpaca-uncensored-deduped.jsonl` and save to `./dataset`
+2. Create conda env: `conda create --name <env> ` and use set_up.sh by `./set_up.sh` (May need to use `chmod +x` first)
+4. Download the whole project to the repository `/root/V429` (for example, the repository of project_run.py should be `/root/V429/project_run.py`)
 5. Run `1.data_preprocessing.py`
 6. Run one of the following commands.
 
