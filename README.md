@@ -28,9 +28,10 @@ This repository includes all code, training scripts, and configuration files for
 ---
 
 ## 2. Model Description
-Summarize the model architecture(s) used (e.g., ResNet-18, Transformer). Include:
+-Summarize the model architecture(s) used (e.g., ResNet-18, Transformer). Include:
 Framework: Python, PyTorch, Hugging Face Transformers, DeepSpeed with ZeRO-2, WandB, TorchProfiler.
-Model Used: TinyLlama-1.1B-Chat-v1.0
+
+-Model Used: TinyLlama-1.1B-Chat-v1.0
 
 ---
 
@@ -94,7 +95,7 @@ Using PyTorch Profiler + DeepSpeed tracing:
 5. Run `1.data_preprocessing.py`
 ---
 
-B. Wandb Dashboard
+### B. Wandb Dashboard
 
 View training and evaluation metrics here: https://wandb.ai/6998gp_TLA/projects
 
@@ -102,7 +103,7 @@ View training and evaluation metrics here: https://wandb.ai/6998gp_TLA/projects
 
 ### C. Specify for Training or For Inference or if Both 
 
-## Commands
+#### Commands
 - Training all the models:
 ``
 ./train_all.sh
