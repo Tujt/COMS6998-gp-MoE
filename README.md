@@ -126,13 +126,13 @@ As shown in the previous part
 
 To reproduce our minimum reported result, run:
 
-```bash
-# Step 1: Follow the steps in the "Requirements" part
 
-# Step 2: Run training, training all the models, following the first command in C.
+#### Step 1: Follow the steps in the "Requirements" part
 
-# Step 3: Run evaluation: enter into train_single+eval.py, change the oarameter: `STAGE=2`, change the `OUTPUT_DIR` into the repository to the corresponding checkpoints (need to change the code to realize changing the model evaluating), and change the `PROJECT_NAME` (for WandB, arbitrarily give a new name).
-```
+#### Step 2: Run training, training all the models, following the first command in C.
+
+#### Step 3: Run evaluation: enter into train_single+eval.py, change the oarameter: `STAGE=2`, change the `OUTPUT_DIR` into the repository to the corresponding checkpoints (need to change the code to realize changing the model evaluating), and change the `PROJECT_NAME` (for WandB, arbitrarily give a new name). The repository to the corresponding checkpoints can be found in the last few lines of train_all.sh
+
 
 ---
 
