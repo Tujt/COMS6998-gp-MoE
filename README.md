@@ -113,7 +113,7 @@ View training and evaluation metrics here: https://wandb.ai/6998gp_TLA/projects
 ``
 ./train_single+eval.sh
 ``
-
+output: the checkpoints will be stored in: root/autodl-tmp/V429/<corresponding repository>
 ---
 
 ### D. Evaluation
@@ -129,13 +129,9 @@ To reproduce our minimum reported result, run:
 ```bash
 # Step 1: Follow the steps in the "Requirements" part
 
-# Step 2: Run training
+# Step 2: Run training, training all the models, following the first command in C.
 
-# Step 3: Run training (or skip if checkpoint is provided)
-python train.py --config configs/default.yaml
-
-# Step 4: Evaluate
-python eval.py --weights checkpoints/best_model.pth
+# Step 3: Run evaluation: enter into train_single+eval.py, change the oarameter: `STAGE=2`, change the `OUTPUT_DIR` into the repository to the corresponding checkpoints (need to change the code to realize changing the model evaluating), and change the `PROJECT_NAME` (for WandB, arbitrarily give a new name).
 ```
 
 ---
