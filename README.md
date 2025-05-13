@@ -90,7 +90,7 @@ Using PyTorch Profiler + DeepSpeed tracing:
 ### A. Requirements
 
 1. Install conda
-2. Create conda env: `conda create --name <env> ` and use set_up.sh by `./set_up.sh` (May need to use `chmod +x` first). Or, use `pip install torch==2.3.0 transformers==4.44.2 datasets==2.21.0 deepspeed==0.15.1 peft==0.12.0 safetensors==0.4.5 wandb==0.18.1 numpy==1.26.4 tqdm==4.66.5 psutil==6.0.0 tensorboard==2.17.1 `
+2. Create conda env: `conda create --name <env> ` and use set_up.sh by `./set_up.sh` (May need to use `chmod +x` first). Or, use `pip install torch==2.3.0 transformers==4.44.2 datasets==2.21.0 deepspeed==0.15.1 peft==0.12.0 safetensors==0.4.5 wandb==0.18.1 numpy==1.26.4 tqdm==4.66.5 psutil==6.0.0 tensorboard==2.17.1 `. (If there are any missing components during operation, they can be installed as needed.)
 4. Download the whole project to the repository `/root/V429` (for example, the repository of project_run.py should be `/root/V429/project_run.py`)
 5. Run `1.data_preprocessing.py`
 ---
